@@ -1,47 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useProdutosViewModel } from '../../viewmodels/produtos.vm';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import ProdutoCard from '../../components/ProdutoCard';
-import { mockCategorias } from '../../mocks/produtos.mock';
+import { useCategoriasViewModel } from '../../viewmodels/categorias.vm';
+import { ProdutoAPI } from '../../services/api/produto.api';
+import { Produto } from '../../models/produto.model';
 import { ChevronRight, Filter, X } from 'lucide-react';
 
-export default function ProdutosPage() {
-  const { produtos, carregando } = useProdutosViewModel();
-  const [showFilters, setShowFilters] = useState(false);
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState<string | null>(null);
-  const [ordenacao, setOrdenacao] = useState('padrao');
+function ProdutosContent() {
+  const searchParams = useSearchParams();
+  const categoriaParam = searchParams.get('categoria');
 
-  const produtosFiltrados = produtos
-    .filter(p => !categoriaSelecionada || p.categoria === categoriaSelecionada)
-    .sort((a, b) => {
-      if (ordenacao === 'menor') return a.preco - b.preco;
-      if (ordenacao === 'maior') return b.preco - a.preco;
-      if (ordenacao === 'avaliacao') return b.avaliacao - a.avaliacao;
-      return 0;
-    });
+  const { categorias } = useCategoriasViewModel();
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState<string | null>(categoriaParam);
+  const [ordenacao, setOrdenacao] = useState('padrao');
+  const [showFilters, setShowFilters] = useState(false);
+
+  const carregar = useCallback(async (cat: string | null) => {
+    setCarregando(true);
+    try {
+      const data = await ProdutoAPI.listarProdutos(cat ? { categoria: cat } : undefined);
+      setProdutos(data);
+    } finally {
+      setCarregando(false);
+    }
+  }, []);
+
+  useEffect(() => { carregar(categoriaSelecionada); }, [categoriaSelecionada, carregar]);
+
+  const produtosFiltrados = [...produtos].sort((a, b) => {
+    if (ordenacao === 'menor') return a.preco - b.preco;
+    if (ordenacao === 'maior') return b.preco - a.preco;
+    if (ordenacao === 'avaliacao') return b.avaliacao - a.avaliacao;
+    return 0;
+  });
+
+  const nomeCategoria = categorias.find(c => c.id === categoriaSelecionada)?.nome;
 
   return (
     <div className="container mx-auto px-4 max-w-7xl py-8">
-      {/* Breadcrumbs */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 overflow-x-auto whitespace-nowrap">
         <Link href="/" className="hover:text-green-600">Início</Link>
         <ChevronRight size={14} />
         <span className="font-medium text-gray-900">
-          {categoriaSelecionada
-            ? mockCategorias.find(c => c.id === categoriaSelecionada)?.nome ?? 'Produtos'
-            : 'Todos os Produtos'}
+          {nomeCategoria ?? 'Todos os Produtos'}
         </span>
       </div>
 
       <div className="flex gap-6">
         {/* Sidebar */}
-        <aside className={`
-          fixed inset-0 z-40 bg-black/40 lg:bg-transparent lg:static lg:inset-auto lg:z-auto
-          lg:w-60 lg:flex-shrink-0
-          ${showFilters ? 'flex' : 'hidden lg:flex'}
-        `} onClick={() => setShowFilters(false)}>
+        <aside
+          className={`fixed inset-0 z-40 bg-black/40 lg:bg-transparent lg:static lg:inset-auto lg:z-auto lg:w-60 lg:flex-shrink-0 ${showFilters ? 'flex' : 'hidden lg:flex'}`}
+          onClick={() => setShowFilters(false)}
+        >
           <div
             className="ml-auto w-72 lg:w-full h-full lg:h-auto bg-white lg:rounded-2xl lg:border lg:border-gray-100 p-6 overflow-y-auto"
             onClick={e => e.stopPropagation()}
@@ -53,7 +69,6 @@ export default function ProdutosPage() {
               </button>
             </div>
 
-            {/* Categorias */}
             <div className="mb-6">
               <h3 className="font-bold text-gray-900 mb-3 text-sm uppercase tracking-wider">Categorias</h3>
               <ul className="space-y-1">
@@ -65,7 +80,7 @@ export default function ProdutosPage() {
                     Todas as categorias
                   </button>
                 </li>
-                {mockCategorias.map(cat => (
+                {categorias.map(cat => (
                   <li key={cat.id}>
                     <button
                       onClick={() => setCategoriaSelecionada(cat.id)}
@@ -78,27 +93,11 @@ export default function ProdutosPage() {
                 ))}
               </ul>
             </div>
-
-            {/* Preferências */}
-            <div>
-              <h3 className="font-bold text-gray-900 mb-3 text-sm uppercase tracking-wider">Preferências</h3>
-              <ul className="space-y-3">
-                {['Orgânico', 'Sem Glúten', 'Vegano', 'Sem Lactose'].map(pref => (
-                  <li key={pref}>
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-green-600" />
-                      <span className="text-sm text-gray-600 group-hover:text-gray-900">{pref}</span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </aside>
 
         {/* Conteúdo Principal */}
         <main className="flex-1 min-w-0">
-          {/* Barra superior */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 mb-5 gap-3">
             <div className="flex items-center gap-3">
               <button
@@ -126,7 +125,6 @@ export default function ProdutosPage() {
             </div>
           </div>
 
-          {/* Grid */}
           {carregando ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
@@ -137,9 +135,9 @@ export default function ProdutosPage() {
             <div className="flex flex-col items-center justify-center py-32 text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl">
               <span className="text-5xl mb-4">🔍</span>
               <p className="font-bold text-lg">Nenhum produto encontrado</p>
-              <p className="text-sm mt-1">Tente outra categoria ou filtro</p>
+              <p className="text-sm mt-1">Tente outra categoria</p>
               <button onClick={() => setCategoriaSelecionada(null)} className="mt-4 text-green-600 hover:underline text-sm font-medium">
-                Limpar filtros
+                Ver todos
               </button>
             </div>
           ) : (
@@ -152,5 +150,13 @@ export default function ProdutosPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function ProdutosPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" /></div>}>
+      <ProdutosContent />
+    </Suspense>
   );
 }

@@ -10,7 +10,7 @@
     "clean": "next clean"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node --project prisma/tsconfig.json prisma/seed.ts"
   },
   "dependencies": {
     "@google/genai": "^2.0.0",

@@ -6,18 +6,15 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
+        hostname: 'images.unsplash.com',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
+        hostname: '*.public.blob.vercel-storage.com',
         pathname: '/**',
       },
     ],

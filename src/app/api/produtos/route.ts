@@ -55,10 +55,11 @@ export async function GET(request: NextRequest) {
 
     const produtosDTO = produtos.map(produtoToDTO);
 
-    return NextResponse.json(produtosDTO);
+    return NextResponse.json(produtosDTO, {
+      headers: { 'Cache-Control': 's-maxage=30, stale-while-revalidate=120' },
+    });
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
-    // In a real app, you might want to log the error to a service
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

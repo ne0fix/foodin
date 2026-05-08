@@ -12,7 +12,9 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(categorias);
+    return NextResponse.json(categorias, {
+      headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=600' },
+    });
   } catch (error) {
     console.error('Erro ao buscar categorias:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
