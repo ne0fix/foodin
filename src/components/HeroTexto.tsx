@@ -59,7 +59,7 @@ export default function HeroTexto() {
         willChange: 'opacity, transform',
       }}
     >
-      <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight line-clamp-3 sm:line-clamp-none">
         {msg.titulo.split('\n').map((linha, i, arr) => (
           <span key={i}>{linha}{i < arr.length - 1 && <br />}</span>
         ))}

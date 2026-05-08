@@ -13,7 +13,31 @@ export default function HomePage() {
   const { produtos, carregando } = useProdutosViewModel();
 
   const ofertas = produtos.filter(p => p.tags.includes('desconto')).slice(0, 8);
-  const maisVendidos = produtos.slice(0, 8);
+
+  const laticinios = produtos
+    .filter(p => p.categoria === 'frios-e-embutidos' && (
+      p.nome.toLowerCase().includes('iogurte') ||
+      p.nome.toLowerCase().includes('shake')   ||
+      p.nome.toLowerCase().includes('flan')    ||
+      p.nome.toLowerCase().includes('manteiga') ||
+      p.nome.toLowerCase().includes('margarina')
+    ))
+    .slice(0, 8);
+
+  const frios = produtos
+    .filter(p => p.categoria === 'frios-e-embutidos' && (
+      p.nome.toLowerCase().includes('frango') ||
+      p.nome.toLowerCase().includes('salsicha') ||
+      p.nome.toLowerCase().includes('linguiça') ||
+      p.nome.toLowerCase().includes('miúdos') ||
+      p.nome.toLowerCase().includes('peito') ||
+      p.nome.toLowerCase().includes('hot wings')
+    ))
+    .slice(0, 8);
+
+  const congelados = produtos
+    .filter(p => p.categoria === 'congelados')
+    .slice(0, 8);
 
   return (
     <div className="flex flex-col pb-16">
@@ -167,24 +191,78 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Mais Vendidos ── */}
+      {/* ── Laticínios ── */}
       <section className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-2xl font-extrabold text-gray-900">⭐ Mais Vendidos</h2>
-          <Link href="/produtos" className="hidden sm:flex items-center gap-1 text-sm text-green-600 hover:underline font-medium">
+          <div>
+            <h2 className="text-2xl font-extrabold text-gray-900">🥛 Laticínios</h2>
+            <p className="text-sm text-gray-500 mt-1">Iogurtes, manteigas, margarinas e mais</p>
+          </div>
+          <Link href="/produtos?categoria=frios-e-embutidos" className="hidden sm:flex items-center gap-1 text-sm text-green-600 hover:underline font-medium">
             Ver todos <ArrowRight size={14} />
           </Link>
         </div>
-
         {carregando ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {maisVendidos.map(produto => (
+            {laticinios.map(produto => (
+              <ProdutoCard key={produto.id} produto={produto} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── Frios e Embutidos ── */}
+      <section className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-2xl font-extrabold text-gray-900">🧀 Frios e Embutidos</h2>
+            <p className="text-sm text-gray-500 mt-1">Frango, salsicha, linguiça e mais</p>
+          </div>
+          <Link href="/produtos?categoria=frios-e-embutidos" className="hidden sm:flex items-center gap-1 text-sm text-green-600 hover:underline font-medium">
+            Ver todos <ArrowRight size={14} />
+          </Link>
+        </div>
+        {carregando ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {frios.map(produto => (
+              <ProdutoCard key={produto.id} produto={produto} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── Congelados ── */}
+      <section className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-2xl font-extrabold text-gray-900">❄️ Congelados</h2>
+            <p className="text-sm text-gray-500 mt-1">Sorvetes, polpas, pratos prontos e mais</p>
+          </div>
+          <Link href="/produtos?categoria=congelados" className="hidden sm:flex items-center gap-1 text-sm text-green-600 hover:underline font-medium">
+            Ver todos <ArrowRight size={14} />
+          </Link>
+        </div>
+        {carregando ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {congelados.map(produto => (
               <ProdutoCard key={produto.id} produto={produto} />
             ))}
           </div>
