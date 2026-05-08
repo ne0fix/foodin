@@ -2,11 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import ProdutoCard from '../components/ProdutoCard';
-import HeroTexto from '../components/HeroTexto';
+import ProdutoCard from '@/src/components/ProdutoCard';
+import HeroTexto from '@/src/components/HeroTexto';
 import { ArrowRight, Leaf, ShieldCheck, ThumbsUp, Truck } from 'lucide-react';
-import { useHomeSecoesViewModel } from '../viewmodels/home.vm';
-import { useCategoriasViewModel } from '../viewmodels/categorias.vm';
+import { useHomeSecoesViewModel } from '@/src/viewmodels/home.vm';
+import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
 
 export default function HomePage() {
   const { secoes, carregando: carregandoSecoes, erro: erroSecoes } = useHomeSecoesViewModel();

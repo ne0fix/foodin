@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCarrinhoViewModel } from '../../viewmodels/carrinho.vm';
-import { formatarMoeda } from '../../utils/formatadores';
+import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
+import { formatarMoeda } from '@/src/utils/formatadores';
 import { ChevronRight, Minus, Plus, Trash2, ShieldCheck, ShoppingCart } from 'lucide-react';
 
 export default function CarrinhoPage() {

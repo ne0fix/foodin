@@ -1,7 +1,5 @@
 import type {Metadata} from 'next';
-import './globals.css'; // Global styles
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Super G & N | Supermercado Online',
@@ -12,11 +10,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="pt-BR" className="overflow-x-hidden">
       <body className="min-h-screen flex flex-col font-sans bg-white overflow-x-hidden" suppressHydrationWarning>
-        <Header />
-        <main className="flex-1 flex flex-col">
-           {children}
-        </main>
-        <Footer />
+        {children}
       </body>
     </html>
   );

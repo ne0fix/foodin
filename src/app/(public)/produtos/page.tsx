@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import ProdutoCard from '../../components/ProdutoCard';
-import { useCategoriasViewModel } from '../../viewmodels/categorias.vm';
-import { ProdutoAPI } from '../../services/api/produto.api';
-import { Produto } from '../../models/produto.model';
+import ProdutoCard from '@/src/components/ProdutoCard';
+import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
+import { ProdutoAPI } from '@/src/services/api/produto.api';
+import { Produto } from '@/src/models/produto.model';
 import { ChevronRight, Filter, X } from 'lucide-react';
 
 function ProdutosContent() {

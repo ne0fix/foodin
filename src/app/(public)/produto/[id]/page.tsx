@@ -3,10 +3,10 @@
 import { use, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useProdutoDetailViewModel, useProdutosViewModel } from '../../../viewmodels/produtos.vm';
-import { useCarrinhoViewModel } from '../../../viewmodels/carrinho.vm';
-import ProdutoCard from '../../../components/ProdutoCard';
-import { formatarMoeda } from '../../../utils/formatadores';
+import { useProdutoDetailViewModel, useProdutosViewModel } from '@/src/viewmodels/produtos.vm';
+import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
+import ProdutoCard from '@/src/components/ProdutoCard';
+import { formatarMoeda } from '@/src/utils/formatadores';
 import { ChevronRight, Heart, Minus, Plus, Share2, Star } from 'lucide-react';
 
 export default function ProdutoDetailPage({ params }: { params: Promise<{ id: string }> }) {
