@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/*
+  Paleta green baseada em #008641 como green-600.
+  Gerada mantendo H≈145°, S~100%, variando Lightness.
+*/
+@theme {
+  --color-green-50:  #eaf6ee;
+  --color-green-100: #cdeada;
+  --color-green-200: #9ad5b5;
+  --color-green-300: #67c090;
+  --color-green-400: #34ab6b;
+  --color-green-500: #009a4d;
+  --color-green-600: #008641;
+  --color-green-700: #006b34;
+  --color-green-800: #005027;
+  --color-green-900: #003519;
+  --color-green-950: #001d0e;
+}
+
+@keyframes heroFade {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-animate {
+  animation: heroFade 0.6s ease forwards;
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
