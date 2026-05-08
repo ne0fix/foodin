@@ -12,13 +12,13 @@ export type LoginFormData = z.infer<typeof LoginSchema>;
 export const ProdutoCreateSchema = z.object({
   nome: z.string().min(3, 'O nome deve ter no mínimo 3 caracteres.'),
   descricao: z.string().min(10, 'A descrição deve ter no mínimo 10 caracteres.'),
-  preco: z.coerce.number().positive('O preço deve ser um número positivo.'),
-  precoOriginal: z.coerce.number().positive('O preço original deve ser um número positivo.').optional().nullable(),
-  imagem: z.string().url('A URL da imagem é inválida.'),
+  preco: z.number().positive('O preço deve ser um número positivo.'),
+  precoOriginal: z.number().positive('O preço original deve ser positivo.').nullable().optional(),
+  imagem: z.string().min(1, 'A imagem é obrigatória.'),
   quantidadePacote: z.string().min(1, 'A quantidade do pacote é obrigatória.'),
   categoriaId: z.string().min(1, 'A categoria é obrigatória.'),
   emEstoque: z.boolean().default(true),
-  tags: z.array(z.string()).optional().default([]),
+  tags: z.array(z.string()).default([]),
 });
 
 export const ProdutoUpdateSchema = ProdutoCreateSchema.partial();

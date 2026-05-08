@@ -4,7 +4,7 @@ import prisma from '@/src/lib/prisma';
 
 export async function GET(req: NextRequest) {
   try {
-    const adminPayload = getAdminFromRequest(req);
+    const adminPayload = await getAdminFromRequest(req);
 
     if (!adminPayload) {
       return new NextResponse('Não autorizado.', { status: 401 });

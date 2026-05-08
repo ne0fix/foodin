@@ -1,38 +1,29 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/src/lib/prisma';
 import { produtoToDTO } from '@/src/lib/dto';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
 
     const produto = await prisma.produto.findFirst({
-      where: {
-        id: id,
-        ativo: true,
-      },
+      where: { id, ativo: true },
       include: {
         categoria: true,
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
+        tags: { include: { tag: true } },
       },
     });
 
-    if (!produto) {
-      return new NextResponse('Produto não encontrado', { status: 404 });
-    }
+    if (!produto) return new NextResponse('Produto não encontrado', { status: 404 });
 
-    const produtoDTO = produtoToDTO(produto);
-
-    return NextResponse.json(produtoDTO);
+    return NextResponse.json(produtoToDTO(produto), {
+      headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=300' },
+    });
   } catch (error) {
-    console.error(`Erro ao buscar produto com id: ${params.id}`, error);
+    console.error('Erro ao buscar produto:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

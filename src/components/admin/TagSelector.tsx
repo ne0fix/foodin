@@ -47,3 +47,5 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
     </div>
   );
 }
+
+export default TagSelector;

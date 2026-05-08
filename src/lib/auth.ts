@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import { NextRequest } from 'next/server';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -7,31 +7,34 @@ if (!JWT_SECRET) {
   throw new Error('O segredo JWT (JWT_SECRET) não está definido nas variáveis de ambiente.');
 }
 
-export interface AdminJWTPayload extends JwtPayload {
+const secret = new TextEncoder().encode(JWT_SECRET);
+
+export interface AdminJWTPayload extends JWTPayload {
   adminId: string;
   email: string;
 }
 
-export function signJWT(payload: { adminId: string; email: string }): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+export async function signJWT(payload: { adminId: string; email: string }): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('8h')
+    .sign(secret);
 }
 
-export function verifyJWT(token: string): AdminJWTPayload | null {
+export async function verifyJWT(token: string): Promise<AdminJWTPayload | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AdminJWTPayload;
-    return decoded;
-  } catch (error) {
-    console.error('Falha na verificação do JWT:', error);
+    const { payload } = await jwtVerify(token, secret);
+    return payload as AdminJWTPayload;
+  } catch {
     return null;
   }
 }
 
-export function getAdminFromRequest(req: NextRequest): AdminJWTPayload | null {
-    const token = req.cookies.get('admin-token')?.value;
-
-    if (token) {
-        return verifyJWT(token);
-    }
-
-    return null;
+export async function getAdminFromRequest(req: NextRequest): Promise<AdminJWTPayload | null> {
+  const token = req.cookies.get('admin-token')?.value;
+  if (token) {
+    return verifyJWT(token);
+  }
+  return null;
 }

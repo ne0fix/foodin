@@ -4,8 +4,8 @@ import { ReactNode } from 'react';
 
 export interface ColumnDef<T> {
   header: string;
-  accessor: keyof T | ((row: T) => any);
-  cell?: (value: any, row: T) => ReactNode;
+  accessor: keyof T | ((row: T) => unknown);
+  cell?: (value: unknown, row: T) => ReactNode;
 }
 
 interface DataTableProps<T> {
@@ -112,3 +112,5 @@ export function DataTable<T extends { id: string | number }>({
     </div>
   );
 }
+
+export default DataTable;

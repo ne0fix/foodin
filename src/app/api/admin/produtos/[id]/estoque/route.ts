@@ -1,37 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/src/lib/prisma';
 import { EstoqueUpdateSchema } from '@/src/utils/validators';
-import { Prisma } from '@prisma/client';
 
-// PATCH /api/admin/produtos/[id]/estoque
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const validation = EstoqueUpdateSchema.safeParse(body);
 
     if (!validation.success) {
-      return NextResponse.json({ error: 'Dados inválidos.', details: validation.error.flatten() }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Dados inválidos.', details: validation.error.flatten() },
+        { status: 400 },
+      );
     }
 
-    const { emEstoque } = validation.data;
-
-    const updatedProduto = await prisma.produto.update({
-      where: { id: params.id },
-      data: { emEstoque },
+    const updated = await prisma.produto.update({
+      where: { id },
+      data: { emEstoque: validation.data.emEstoque },
     });
 
-    return NextResponse.json({ id: updatedProduto.id, emEstoque: updatedProduto.emEstoque });
-
+    return NextResponse.json({ id: updated.id, emEstoque: updated.emEstoque });
   } catch (error) {
-    console.error(`Erro ao atualizar estoque do produto ${params.id}:`, error);
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to update not found
-        return new NextResponse('Produto não encontrado para atualização', { status: 404 });
-      }
-    }
+    console.error('Erro ao atualizar estoque:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

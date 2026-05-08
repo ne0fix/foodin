@@ -68,14 +68,22 @@
 - [x] src/app/admin/categorias/page.tsx (tabela inline editável)
 - [x] src/app/admin/secoes/page.tsx (lista de SecaoCard com reordenação)
 
+### Fase 6 — Finalização + Deploy ✅ CÓDIGO CONCLUÍDO
+- [x] src/lib/blob.ts (abstração Vercel Blob)
+- [x] Cache HTTP nas rotas públicas (Cache-Control em todas as 4 rotas públicas)
+- [x] next.config.ts: domínio *.public.blob.vercel-storage.com configurado
+- [x] Verificar que nenhum arquivo fora do seed importa de src/mocks/
+- [x] Tipos TypeScript: zero `any` implícito no código de produção
+
+### Correções pós-infra (2026-05-08)
+- [x] Middleware migrado para `src/proxy.ts` (Next.js 16: arquivo renomeado de middleware → proxy)
+- [x] JWT migrado de `jsonwebtoken` → `jose` (compatível com Edge Runtime)
+- [x] Smoke test e2e: todas as rotas públicas retornam 200, todas as rotas admin retornam 401 sem auth e 200 com auth
+
 ## ⏳ Pendente
 
-### Fase 6 — Finalização + Deploy
-- [ ] src/lib/blob.ts (abstração Vercel Blob)
-- [ ] Cache HTTP nas rotas públicas (Cache-Control headers)
-- [ ] next.config.ts: adicionar domínio public.blob.vercel-storage.com
-- [ ] Verificar que nenhum arquivo fora do seed importa de src/mocks/
-- [ ] Smoke test end-to-end de todas as páginas
+- [ ] Configurar BLOB_READ_WRITE_TOKEN real no .env.local (atual é placeholder) para habilitar upload de imagens
+- [ ] Deploy na Vercel com variáveis de produção
 
 ## ❌ Bloqueios / Dúvidas
 - Executar `prisma migrate dev` e `prisma db seed` requer DATABASE_URL configurada pelo usuário.

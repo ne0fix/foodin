@@ -21,8 +21,6 @@ const nextConfig: NextConfig = {
   },
   output: 'standalone',
   transpilePackages: ['motion'],
-  // Turbopack is the default in Next.js 16.
-  turbopack: {},
 };
 
 export default nextConfig;

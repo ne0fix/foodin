@@ -13,7 +13,7 @@ const LoginSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     // 1. Rate Limiting
-    const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? '127.0.0.1';
+    const ip = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? '127.0.0.1';
     if (!checkRateLimit(ip)) {
       return new NextResponse('Muitas tentativas. Tente novamente mais tarde.', { status: 429 });
     }
@@ -45,18 +45,18 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. JWT generation
-    const token = signJWT({
+    const token = await signJWT({
       adminId: admin.id,
       email: admin.email,
     });
 
     // 6. Set cookie and send response
-    const response = NextResponse.json({ 
-      admin: { 
-        id: admin.id, 
-        email: admin.email, 
-        nome: admin.nome 
-      } 
+    const response = NextResponse.json({
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        nome: admin.nome
+      }
     });
 
     response.cookies.set('admin-token', token, {

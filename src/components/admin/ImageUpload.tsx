@@ -88,3 +88,5 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     </div>
   );
 }
+
+export default ImageUpload;

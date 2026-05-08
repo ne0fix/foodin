@@ -1,217 +1,214 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useDebounce } from 'use-debounce';
-import { useAdminProdutos } from '@/src/viewmodels/adminProdutos.vm';
-import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
-import { ColumnDef, DataTable } from '@/src/components/admin/ui/DataTable';
-import { ProdutoAdminDTO } from '@/src/lib/dto';
-import { Badge } from '@/src/components/admin/ui/Badge';
-import Toggle from '@/src/components/admin/ui/Toggle';
-import { formatarMoeda } from '@/src/utils/formatadores';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Loader2 } from 'lucide-react';
+import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
+import { ProdutoAdminDTO } from '@/src/lib/dto';
+import { ColumnDef } from '@/src/components/admin/ui/DataTable';
+import DataTable from '@/src/components/admin/ui/DataTable';
+import Badge from '@/src/components/admin/ui/Badge';
+import Toggle from '@/src/components/admin/ui/Toggle';
 import ConfirmDialog from '@/src/components/admin/ui/ConfirmDialog';
+import { formatarMoeda } from '@/src/utils/formatadores';
 
 function PageFilters() {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const { categorias, carregando: loadingCategorias } = useCategoriasViewModel();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { categorias } = useCategoriasViewModel();
+  const [query, setQuery] = useState(searchParams.get('q') || '');
+  const [debouncedQuery] = useDebounce(query, 500);
 
-    const [query, setQuery] = useState(searchParams.get('q') || '');
-    const [debouncedQuery] = useDebounce(query, 500);
+  useEffect(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    debouncedQuery ? p.set('q', debouncedQuery) : p.delete('q');
+    p.set('page', '1');
+    router.push(`${pathname}?${p.toString()}`);
+  }, [debouncedQuery, pathname, router, searchParams]);
 
-    useEffect(() => {
-        const newParams = new URLSearchParams(searchParams.toString());
-        if (debouncedQuery) {
-            newParams.set('q', debouncedQuery);
-        } else {
-            newParams.delete('q');
-        }
-        newParams.set('page', '1');
-        router.push(`${pathname}?${newParams.toString()}`);
-    }, [debouncedQuery, pathname, router]);
+  const set = (key: string, value: string) => {
+    const p = new URLSearchParams(searchParams.toString());
+    value ? p.set(key, value) : p.delete(key);
+    p.set('page', '1');
+    router.push(`${pathname}?${p.toString()}`);
+  };
 
-    const handleFilterChange = (key: string, value: string) => {
-        const newParams = new URLSearchParams(searchParams.toString());
-        if (value) {
-            newParams.set(key, value);
-        } else {
-            newParams.delete(key);
-        }
-        newParams.set('page', '1');
-        router.push(`${pathname}?${newParams.toString()}`);
-    };
-
-    return (
-        <div className="flex flex-wrap items-center gap-4">
-            <input 
-                type="text"
-                placeholder="Buscar por nome..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 w-full max-w-xs"
-            />
-            <select
-                value={searchParams.get('categoria') || ''}
-                onChange={(e) => handleFilterChange('categoria', e.target.value)}
-                disabled={loadingCategorias}
-                className="border border-gray-300 rounded-md px-3 py-2"
-            >
-                <option value="">Todas as categorias</option>
-                {categorias.map(cat => <option key={cat.id} value={cat.id}>{cat.nome}</option>)}
-            </select>
-            <select
-                value={searchParams.get('emEstoque') || ''}
-                onChange={(e) => handleFilterChange('emEstoque', e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2"
-            >
-                <option value="">Todo o estoque</option>
-                <option value="true">Em estoque</option>
-                <option value="false">Fora de estoque</option>
-            </select>
-             <select
-                value={searchParams.get('ativo') || ''}
-                onChange={(e) => handleFilterChange('ativo', e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2"
-            >
-                <option value="">Todos</option>
-                <option value="true">Ativos</option>
-                <option value="false">Inativos</option>
-            </select>
-        </div>
-    );
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <input
+        type="text"
+        placeholder="Buscar por nome..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-56 outline-none focus:border-green-500"
+      />
+      <select
+        value={searchParams.get('categoria') || ''}
+        onChange={(e) => set('categoria', e.target.value)}
+        className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-green-500"
+      >
+        <option value="">Todas as categorias</option>
+        {categorias.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+      </select>
+      <select
+        value={searchParams.get('emEstoque') || ''}
+        onChange={(e) => set('emEstoque', e.target.value)}
+        className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-green-500"
+      >
+        <option value="">Todo o estoque</option>
+        <option value="true">Em estoque</option>
+        <option value="false">Fora de estoque</option>
+      </select>
+    </div>
+  );
 }
 
-function AdminProdutosPageContent() {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
+function ProdutosContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-    const { produtos, loading, pagination, toggleEstoque, deleteProduto, refetch } = useAdminProdutos();
-    
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedProduto, setSelectedProduto] = useState<ProdutoAdminDTO | null>(null);
+  const [produtos, setProdutos] = useState<ProdutoAdminDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [excluindo, setExcluindo] = useState<ProdutoAdminDTO | null>(null);
 
-    const handleDeleteClick = (produto: ProdutoAdminDTO) => {
-        setSelectedProduto(produto);
-        setDialogOpen(true);
-    };
-
-    const handleConfirmDelete = async () => {
-        if (selectedProduto) {
-            await deleteProduto(selectedProduto.id);
-            // After deletion, we might want to refetch to ensure pagination is correct
-            refetch();
-        }
-    };
-    
-    const columns: ColumnDef<ProdutoAdminDTO>[] = [
-        {
-            header: 'Produto',
-            accessor: 'nome',
-            cell: (_, row) => (
-                <div className="flex items-center gap-3">
-                    <Image src={row.imagem} alt={row.nome} width={40} height={40} className="rounded-md object-cover bg-gray-100" />
-                    <span className="font-medium">{row.nome}</span>
-                </div>
-            )
-        },
-        {
-            header: 'Categoria',
-            accessor: 'categoria',
-            cell: (value) => <Badge label={value} variant="categoria" />,
-        },
-        {
-            header: 'Preço',
-            accessor: 'preco',
-            cell: (value, row) => (
-                <div>
-                    <span className={row.precoOriginal ? 'line-through text-gray-500 text-xs' : ''}>{formatarMoeda(value)}</span>
-                    {row.precoOriginal && <p className="font-semibold text-red-600">{formatarMoeda(row.precoOriginal)}</p>}
-                </div>
-            ),
-        },
-        {
-            header: 'Estoque',
-            accessor: 'emEstoque',
-            cell: (value, row) => (
-                <Toggle 
-                    label=""
-                    checked={value} 
-                    onChange={(checked) => toggleEstoque(row.id, checked)}
-                />
-            ),
-        },
-        {
-            header: 'Status',
-            accessor: 'ativo',
-            cell: (value) => <Badge label={value ? 'Ativo' : 'Inativo'} variant={value ? 'success' : 'danger'} />,
-        },
-        {
-            header: 'Ações',
-            accessor: 'id',
-            cell: (id, row) => (
-                <div className="flex items-center gap-2">
-                    <Link href={`/admin/produtos/${id}`} className="p-2 hover:bg-gray-100 rounded-md" title="Editar">
-                        <Edit size={16} />
-                    </Link>
-                    <button onClick={() => handleDeleteClick(row)} className="p-2 hover:bg-gray-100 rounded-md text-red-600" title="Excluir">
-                        <Trash2 size={16} />
-                    </button>
-                </div>
-            )
-        }
-    ];
-
-    const setPage = (page: number) => {
-        const newParams = new URLSearchParams(searchParams.toString());
-        newParams.set('page', String(page));
-        router.push(`${pathname}?${newParams.toString()}`);
+  const carregar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const q = new URLSearchParams(searchParams.toString());
+      if (!q.get('page')) q.set('page', '1');
+      const res = await fetch(`/api/admin/produtos?${q.toString()}`);
+      const json = await res.json();
+      setProdutos(json.data ?? []);
+      setPagination({ page: json.page, totalPages: json.totalPages, total: json.total });
+    } finally {
+      setLoading(false);
     }
+  }, [searchParams]);
 
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Produtos</h1>
-                <Link href="/admin/produtos/novo" className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                    <PlusCircle size={18} />
-                    Novo Produto
-                </Link>
-            </div>
+  useEffect(() => { carregar(); }, [carregar]);
 
-            <PageFilters />
-            
-            <DataTable
-                columns={columns}
-                data={produtos}
-                loading={loading}
-                pagination={pagination}
-                onPageChange={setPage}
-            />
+  async function toggleEstoque(id: string, emEstoque: boolean) {
+    await fetch(`/api/admin/produtos/${id}/estoque`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emEstoque }),
+    });
+    setProdutos((ps) => ps.map((p) => (p.id === id ? { ...p, emEstoque } : p)));
+  }
 
-            {selectedProduto && (
-                <ConfirmDialog
-                    open={dialogOpen}
-                    onClose={() => setDialogOpen(false)}
-                    onConfirm={handleConfirmDelete}
-                    title="Confirmar Exclusão"
-                    message={`Tem certeza que deseja excluir o produto "${selectedProduto?.nome}"? Esta ação não pode ser desfeita.`}
-                    confirmLabel="Excluir"
-                />
-            )}
+  async function handleExcluir() {
+    if (!excluindo) return;
+    await fetch(`/api/admin/produtos/${excluindo.id}`, { method: 'DELETE' });
+    setExcluindo(null);
+    carregar();
+  }
+
+  const setPage = (page: number) => {
+    const p = new URLSearchParams(searchParams.toString());
+    p.set('page', String(page));
+    router.push(`${pathname}?${p.toString()}`);
+  };
+
+  const columns: ColumnDef<ProdutoAdminDTO>[] = [
+    {
+      header: 'Produto',
+      accessor: 'nome',
+      cell: (_, row) => (
+        <div className="flex items-center gap-3">
+          <div className="relative w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+            <Image src={row.imagem} alt={row.nome} fill sizes="40px" className="object-contain p-0.5" onError={() => {}} />
+          </div>
+          <span className="font-medium text-sm text-gray-900 line-clamp-2">{row.nome}</span>
         </div>
-    );
-}
+      ),
+    },
+    {
+      header: 'Categoria',
+      accessor: 'categoria',
+      cell: (value) => <Badge label={value} variant="categoria" />,
+    },
+    {
+      header: 'Preço',
+      accessor: 'preco',
+      cell: (value, row) => (
+        <div>
+          {row.precoOriginal && (
+            <p className="text-xs text-gray-400 line-through">{formatarMoeda(row.precoOriginal)}</p>
+          )}
+          <span className="font-bold text-green-600">{formatarMoeda(value)}</span>
+        </div>
+      ),
+    },
+    {
+      header: 'Estoque',
+      accessor: 'emEstoque',
+      cell: (value, row) => (
+        <Toggle label="" checked={value} onChange={(checked) => toggleEstoque(row.id, checked)} />
+      ),
+    },
+    {
+      header: 'Ações',
+      accessor: 'id',
+      cell: (id, row) => (
+        <div className="flex items-center gap-1">
+          <Link href={`/admin/produtos/${id}`} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Editar">
+            <Edit size={15} />
+          </Link>
+          <button onClick={() => setExcluindo(row)} className="p-2 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600" title="Excluir">
+            <Trash2 size={15} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Produtos</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{pagination.total} produto(s) encontrado(s)</p>
+        </div>
+        <Link
+          href="/admin/produtos/novo"
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg"
+        >
+          <PlusCircle size={16} /> Novo Produto
+        </Link>
+      </div>
+
+      <PageFilters />
+
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="animate-spin text-green-600" size={28} />
+        </div>
+      ) : (
+        <DataTable columns={columns} data={produtos} loading={false} pagination={pagination} onPageChange={setPage} />
+      )}
+
+      <ConfirmDialog
+        open={!!excluindo}
+        titulo="Excluir produto"
+        mensagem={`Tem certeza que deseja excluir "${excluindo?.nome}"? Esta ação não pode ser desfeita.`}
+        labelConfirmar="Excluir"
+        onConfirm={handleExcluir}
+        onCancel={() => setExcluindo(null)}
+      />
+    </div>
+  );
+}
 
 export default function AdminProdutosPage() {
-    return (
-        <Suspense fallback={<div>Carregando filtros...</div>}>
-            <AdminProdutosPageContent />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<div className="flex justify-center py-16"><Loader2 className="animate-spin text-green-600" size={28} /></div>}>
+      <ProdutosContent />
+    </Suspense>
+  );
 }
