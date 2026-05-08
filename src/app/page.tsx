@@ -22,16 +22,6 @@ export default function HomePage() {
     ))
     .slice(0, 8);
 
-  const laticinios = produtos
-    .filter(p => p.categoria === 'frios-e-embutidos' && (
-      p.nome.toLowerCase().includes('iogurte') ||
-      p.nome.toLowerCase().includes('shake')   ||
-      p.nome.toLowerCase().includes('flan')    ||
-      p.nome.toLowerCase().includes('manteiga') ||
-      p.nome.toLowerCase().includes('margarina')
-    ))
-    .slice(0, 8);
-
   const frios = produtos
     .filter(p => p.categoria === 'frios-e-embutidos' && (
       p.nome.toLowerCase().includes('frango') ||
@@ -43,9 +33,7 @@ export default function HomePage() {
     ))
     .slice(0, 8);
 
-  const congelados = produtos
-    .filter(p => p.categoria === 'congelados')
-    .slice(0, 8);
+
 
   return (
     <div className="flex flex-col pb-16">
@@ -199,32 +187,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Laticínios ── */}
-      <section className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">🥛 Laticínios</h2>
-            <p className="text-sm text-gray-500 mt-1">Iogurtes, manteigas, margarinas e mais</p>
-          </div>
-          <Link href="/produtos?categoria=frios-e-embutidos" className="hidden sm:flex items-center gap-1 text-sm text-green-600 hover:underline font-medium">
-            Ver todos <ArrowRight size={14} />
-          </Link>
-        </div>
-        {carregando ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {laticinios.map(produto => (
-              <ProdutoCard key={produto.id} produto={produto} />
-            ))}
-          </div>
-        )}
-      </section>
-
       {/* ── Frios e Embutidos ── */}
       <section className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
         <div className="flex items-center justify-between mb-5">
@@ -251,31 +213,6 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* ── Congelados ── */}
-      <section className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">❄️ Congelados</h2>
-            <p className="text-sm text-gray-500 mt-1">Sorvetes, polpas, pratos prontos e mais</p>
-          </div>
-          <Link href="/produtos?categoria=congelados" className="hidden sm:flex items-center gap-1 text-sm text-green-600 hover:underline font-medium">
-            Ver todos <ArrowRight size={14} />
-          </Link>
-        </div>
-        {carregando ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {congelados.map(produto => (
-              <ProdutoCard key={produto.id} produto={produto} />
-            ))}
-          </div>
-        )}
-      </section>
     </div>
   );
 }
