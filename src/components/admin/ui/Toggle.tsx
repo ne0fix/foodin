@@ -8,7 +8,7 @@ interface ToggleProps {
   labelPosition?: 'left' | 'right';
 }
 
-export function Toggle({ 
+export default function Toggle({
   label, 
   checked, 
   onChange, 

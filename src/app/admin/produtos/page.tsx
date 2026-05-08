@@ -8,7 +8,7 @@ import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
 import { ColumnDef, DataTable } from '@/src/components/admin/ui/DataTable';
 import { ProdutoAdminDTO } from '@/src/lib/dto';
 import { Badge } from '@/src/components/admin/ui/Badge';
-import { Toggle } from '@/src/components/admin/ui/Toggle';
+import Toggle from '@/src/components/admin/ui/Toggle';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import Image from 'next/image';
 import Link from 'next/link';

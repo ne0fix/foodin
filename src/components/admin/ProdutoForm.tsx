@@ -6,7 +6,7 @@ import { ProdutoCreateSchema, ProdutoFormData } from '@/src/utils/validators';
 import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
 import { TagSelector } from './TagSelector';
 import { ImageUpload } from './ImageUpload';
-import { Toggle } from './ui/Toggle';
+import Toggle from './ui/Toggle';
 import { useRouter } from 'next/navigation';
 
 interface ProdutoFormProps {
