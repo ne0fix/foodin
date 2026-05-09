@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import { DadosComprador, DadosEntrega } from '@/src/models/checkout.model';
@@ -16,17 +16,21 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { itens, subtotal, limparCarrinho } = useCarrinhoViewModel();
   const [hidratado, setHidratado] = useState(false);
+  // Impede redirect para /carrinho quando o pedido foi finalizado com sucesso
+  const finalizando = useRef(false);
 
-  const [step, setStep]         = useState<CheckoutStep>(1);
-  const [metodo, setMetodo]     = useState<Metodo | null>(null);
+  const [step, setStep]           = useState<CheckoutStep>(1);
+  const [metodo, setMetodo]       = useState<Metodo | null>(null);
   const [comprador, setComprador] = useState<DadosComprador | null>(null);
-  const [entrega, setEntrega]   = useState<DadosEntrega | null>(null);
-  const [frete, setFrete]       = useState(0);
+  const [entrega, setEntrega]     = useState<DadosEntrega | null>(null);
+  const [frete, setFrete]         = useState(0);
 
   useEffect(() => { setHidratado(true); }, []);
 
   useEffect(() => {
-    if (hidratado && itens.length === 0) router.replace('/carrinho');
+    if (hidratado && itens.length === 0 && !finalizando.current) {
+      router.replace('/carrinho');
+    }
   }, [hidratado, itens.length, router]);
 
   if (!hidratado) {
@@ -113,6 +117,7 @@ export default function CheckoutPage() {
           frete={frete}
           onBack={() => setStep(2)}
           onSuccess={(orderId) => {
+            finalizando.current = true; // bloqueia redirect para /carrinho
             limparCarrinho();
             router.push(`/pedido/${orderId}`);
           }}
