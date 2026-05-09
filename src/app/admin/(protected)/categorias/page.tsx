@@ -5,6 +5,7 @@ import { Check, Trash2, Plus, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/src/components/ui/Skeleton';
 import Toggle from '@/src/components/admin/ui/Toggle';
 import ConfirmDialog from '@/src/components/admin/ui/ConfirmDialog';
+import EmojiPicker from '@/src/components/admin/ui/EmojiPicker';
 
 interface Categoria {
   id: string;
@@ -159,11 +160,9 @@ export default function CategoriasPage() {
             {novaLinha && (
               <tr className="bg-green-50">
                 <td className="px-4 py-3">
-                  <input
+                  <EmojiPicker
                     value={novaLinha.icone}
-                    onChange={(e) => setNovaLinha((n) => n && { ...n, icone: e.target.value })}
-                    className="w-14 border border-gray-200 rounded px-2 py-1 text-center text-lg bg-white"
-                    maxLength={4}
+                    onChange={(emoji) => setNovaLinha((n) => n && { ...n, icone: emoji })}
                   />
                 </td>
                 <td className="px-4 py-3">
@@ -212,11 +211,9 @@ export default function CategoriasPage() {
               return (
                 <tr key={cat.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <input
+                    <EmojiPicker
                       value={ed.icone}
-                      onChange={(e) => setEdicao((prev) => ({ ...prev, [cat.id]: { ...ed, icone: e.target.value } }))}
-                      className="w-14 border border-gray-200 rounded px-2 py-1 text-center text-lg"
-                      maxLength={4}
+                      onChange={(emoji) => setEdicao((prev) => ({ ...prev, [cat.id]: { ...ed, icone: emoji } }))}
                     />
                   </td>
                   <td className="px-4 py-3">
