@@ -4,7 +4,7 @@ import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ProdutoCreateSchema } from '@/src/utils/validators';
-import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
+import { useState, useEffect } from 'react';
 import TagSelector from './TagSelector';
 import ImageUpload from './ImageUpload';
 import Toggle from './ui/Toggle';
@@ -25,9 +25,20 @@ const err = 'mt-1 text-xs text-red-500';
 
 const MAX_EXTRA_IMAGES = 4;
 
+interface CategoriaAdmin { id: string; nome: string; ativo: boolean }
+
 export default function ProdutoForm({ defaultValues, onSubmit, isSubmitting }: Props) {
   const router = useRouter();
-  const { categorias, carregando: loadingCategorias } = useCategoriasViewModel();
+  const [categorias, setCategorias] = useState<CategoriaAdmin[]>([]);
+  const [loadingCategorias, setLoadingCategorias] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/admin/categorias')
+      .then(r => r.json())
+      .then((cats: CategoriaAdmin[]) => setCategorias(cats.filter(c => c.ativo)))
+      .catch(() => {})
+      .finally(() => setLoadingCategorias(false));
+  }, []);
 
   const {
     register,
