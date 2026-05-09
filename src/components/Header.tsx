@@ -56,7 +56,7 @@ export default function Header() {
         </Link>
 
         {/* Search */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 max-w-[140px] sm:max-w-none">
           <div className="flex w-full border-2 border-green-500 rounded-xl overflow-hidden focus-within:border-green-600 transition-colors">
             <select className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm outline-none text-gray-600 font-medium hidden lg:block cursor-pointer">
               <option value="">Todas</option>
@@ -78,10 +78,12 @@ export default function Header() {
 
         {/* Ações */}
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <Link href="/" className="hidden sm:flex flex-col items-center gap-0.5 text-gray-600 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-gray-50">
+          {/* Conta — visível em todos os tamanhos */}
+          <Link href="/" className="flex flex-col items-center gap-0.5 text-gray-600 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-gray-50">
             <User size={20} />
             <span className="hidden lg:block text-[10px] font-medium">Conta</span>
           </Link>
+          {/* Favoritos — apenas desktop */}
           <Link href="/" className="hidden sm:flex relative flex-col items-center gap-0.5 text-gray-600 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-gray-50">
             <Heart size={20} />
             <span className="hidden lg:block text-[10px] font-medium">Favoritos</span>
