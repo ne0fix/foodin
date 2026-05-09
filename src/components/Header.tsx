@@ -56,7 +56,7 @@ export default function Header() {
         </Link>
 
         {/* Search */}
-        <div className="flex-1 min-w-0 max-w-[140px] sm:max-w-none">
+        <div className="flex-1 min-w-0">
           <div className="flex w-full border-2 border-green-500 rounded-xl overflow-hidden focus-within:border-green-600 transition-colors">
             <select className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm outline-none text-gray-600 font-medium hidden lg:block cursor-pointer">
               <option value="">Todas</option>
