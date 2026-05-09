@@ -18,11 +18,24 @@ export default function CheckoutPage() {
   const [comprador, setComprador] = useState<DadosComprador | null>(null);
   const [entrega, setEntrega] = useState<DadosEntrega | null>(null);
   const [frete, setFrete] = useState(0);
+  // Aguarda a hidratação do localStorage antes de verificar o carrinho.
+  // Sem isso, itens=[]] no primeiro render redireciona antes do carrinho carregar.
+  const [hidratado, setHidratado] = useState(false);
 
-  // Redireciona se carrinho vazio
+  useEffect(() => { setHidratado(true); }, []);
+
   useEffect(() => {
-    if (itens.length === 0) router.replace('/carrinho');
-  }, [itens, router]);
+    if (hidratado && itens.length === 0) router.replace('/carrinho');
+  }, [hidratado, itens.length, router]);
+
+  // Mostra spinner enquanto o localStorage ainda não foi lido
+  if (!hidratado) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (itens.length === 0) return null;
 

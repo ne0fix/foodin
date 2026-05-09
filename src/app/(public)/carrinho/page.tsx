@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import { ChevronRight, Minus, Plus, Trash2, ShieldCheck, ShoppingCart } from 'lucide-react';
@@ -10,6 +11,16 @@ import { useRouter } from 'next/navigation';
 export default function CarrinhoPage() {
   const router = useRouter();
   const { itens, total, subtotal, freteEstimado, atualizarQuantidade, removerItem, limparCarrinho, quantidadeTotal } = useCarrinhoViewModel();
+  const [hidratado, setHidratado] = useState(false);
+  useEffect(() => { setHidratado(true); }, []);
+
+  if (!hidratado) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (itens.length === 0) {
     return (
