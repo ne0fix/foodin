@@ -201,17 +201,6 @@ export default function StepPagamento({
                   },
                 },
               }}
-              customization={{
-                paymentMethods: {
-                  creditCard: 'all',
-                  debitCard: 'all',
-                },
-                visual: {
-                  style: {
-                    theme: 'default',
-                  },
-                },
-              }}
               onSubmit={async (formData) => {
                 await onCardSubmit(formData as CardPaymentFormData);
               }}
