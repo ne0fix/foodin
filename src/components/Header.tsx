@@ -50,7 +50,7 @@ export default function Header() {
             alt="Ekomart"
             width={499}
             height={241}
-            className="h-12 sm:h-14 md:h-24 w-auto"
+            className="h-12 sm:h-14 md:h-12 w-auto"
             priority
           />
         </Link>
