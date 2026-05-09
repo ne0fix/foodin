@@ -116,9 +116,9 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
           <p className="text-gray-600 text-sm sm:text-base mb-6 leading-relaxed">{produto.descricao}</p>
 
           {/* Quantidade + Carrinho */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="flex flex-row gap-3 mb-6">
             {produto.emEstoque && (
-              <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden h-12 w-full sm:w-32 bg-white flex-shrink-0">
+              <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden h-14 w-32 flex-shrink-0 bg-white">
                 <button onClick={decrementarQuantidade} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors">
                   <Minus size={16} />
                 </button>
@@ -131,13 +131,13 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
             {produto.emEstoque ? (
               <button
                 onClick={() => adicionarItem(produto, quantidadeSelecionada)}
-                className="flex-1 h-14 sm:h-12 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-xl font-bold text-base flex items-center justify-center gap-3 shadow-lg shadow-green-600/25 transition-all px-4"
+                className="flex-1 h-14 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-green-600/25 transition-all px-4"
               >
                 <ShoppingCart size={20} />
                 Adicionar ao Carrinho
               </button>
             ) : (
-              <div className="w-full h-14 sm:h-12 bg-gray-100 border border-gray-200 text-gray-400 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none">
+              <div className="flex-1 h-14 bg-gray-100 border border-gray-200 text-gray-400 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none">
                 <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
                 Produto Esgotado
               </div>
