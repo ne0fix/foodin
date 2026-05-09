@@ -134,7 +134,8 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
                 className="flex-1 h-14 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-green-600/25 transition-all px-4"
               >
                 <ShoppingCart size={20} />
-                Adicionar ao Carrinho
+                <span className="hidden sm:inline">Adicionar ao Carrinho</span>
+                <span className="sm:hidden">Adicionar</span>
               </button>
             ) : (
               <div className="flex-1 h-14 bg-gray-100 border border-gray-200 text-gray-400 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none">
@@ -142,7 +143,7 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
                 Produto Esgotado
               </div>
             )}
-            <button className="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors flex-shrink-0">
+            <button className="hidden sm:flex w-12 h-14 rounded-xl border border-gray-200 items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors flex-shrink-0">
               <Heart size={20} />
             </button>
           </div>
