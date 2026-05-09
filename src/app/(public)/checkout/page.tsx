@@ -4,23 +4,24 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import { DadosComprador, DadosEntrega } from '@/src/models/checkout.model';
+import StepMetodo from './StepMetodo';
 import StepDados from './StepDados';
-import StepEntrega from './StepEntrega';
 import StepPagamento from './StepPagamento';
 import { ChevronRight } from 'lucide-react';
 
+type Metodo = 'PIX' | 'CARTAO';
 export type CheckoutStep = 1 | 2 | 3;
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { itens, subtotal, limparCarrinho } = useCarrinhoViewModel();
-  const [step, setStep] = useState<CheckoutStep>(1);
-  const [comprador, setComprador] = useState<DadosComprador | null>(null);
-  const [entrega, setEntrega] = useState<DadosEntrega | null>(null);
-  const [frete, setFrete] = useState(0);
-  // Aguarda a hidratação do localStorage antes de verificar o carrinho.
-  // Sem isso, itens=[]] no primeiro render redireciona antes do carrinho carregar.
   const [hidratado, setHidratado] = useState(false);
+
+  const [step, setStep]         = useState<CheckoutStep>(1);
+  const [metodo, setMetodo]     = useState<Metodo | null>(null);
+  const [comprador, setComprador] = useState<DadosComprador | null>(null);
+  const [entrega, setEntrega]   = useState<DadosEntrega | null>(null);
+  const [frete, setFrete]       = useState(0);
 
   useEffect(() => { setHidratado(true); }, []);
 
@@ -28,7 +29,6 @@ export default function CheckoutPage() {
     if (hidratado && itens.length === 0) router.replace('/carrinho');
   }, [hidratado, itens.length, router]);
 
-  // Mostra spinner enquanto o localStorage ainda não foi lido
   if (!hidratado) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -40,9 +40,9 @@ export default function CheckoutPage() {
   if (itens.length === 0) return null;
 
   const STEPS = [
-    { num: 1, label: 'Seus dados' },
-    { num: 2, label: 'Entrega' },
-    { num: 3, label: 'Pagamento' },
+    { num: 1, label: 'Pagamento' },
+    { num: 2, label: 'Seus dados' },
+    { num: 3, label: 'Confirmar'  },
   ];
 
   return (
@@ -62,9 +62,9 @@ export default function CheckoutPage() {
           <div key={s.num} className="flex items-center gap-2">
             <div className={`flex items-center gap-2 ${step >= s.num ? 'text-green-600' : 'text-gray-400'}`}>
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2
-                ${step > s.num ? 'bg-green-600 border-green-600 text-white' : ''}
+                ${step > s.num  ? 'bg-green-600 border-green-600 text-white' : ''}
                 ${step === s.num ? 'border-green-600 text-green-600' : ''}
-                ${step < s.num ? 'border-gray-300 text-gray-400' : ''}
+                ${step < s.num  ? 'border-gray-300 text-gray-400' : ''}
               `}>
                 {step > s.num ? '✓' : s.num}
               </div>
@@ -77,27 +77,35 @@ export default function CheckoutPage() {
         ))}
       </div>
 
-      {/* Steps */}
+      {/* Passo 1 — Escolher método */}
       {step === 1 && (
-        <StepDados
-          inicial={comprador}
-          onNext={(dados) => { setComprador(dados); setStep(2); }}
+        <StepMetodo
+          onNext={(m) => { setMetodo(m); setStep(2); }}
         />
       )}
-      {step === 2 && (
-        <StepEntrega
+
+      {/* Passo 2 — Dados + Entrega */}
+      {step === 2 && metodo && (
+        <StepDados
+          metodo={metodo}
           subtotal={subtotal}
-          inicial={entrega}
+          inicialComprador={comprador}
+          inicialEntrega={entrega}
+          inicialFrete={frete}
           onBack={() => setStep(1)}
-          onNext={(dados, freteCalculado) => {
-            setEntrega(dados);
-            setFrete(freteCalculado);
+          onNext={(c, e, f) => {
+            setComprador(c);
+            setEntrega(e);
+            setFrete(f);
             setStep(3);
           }}
         />
       )}
-      {step === 3 && comprador && entrega && (
+
+      {/* Passo 3 — Pagamento */}
+      {step === 3 && metodo && comprador && entrega && (
         <StepPagamento
+          metodo={metodo}
           comprador={comprador}
           entrega={entrega}
           itens={itens}

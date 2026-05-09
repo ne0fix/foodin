@@ -1,7 +1,7 @@
 export interface DadosComprador {
   nome: string;
   email: string;
-  cpf: string;        // formato: apenas dígitos "12345678901"
+  cpf?: string;       // obrigatório apenas para cartão; PIX não exige
   telefone: string;   // apenas dígitos "11999999999"
 }
 
