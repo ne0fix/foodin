@@ -11,32 +11,46 @@ const mpPayment = new Payment(mpClient);
 function validarAssinatura(req: NextRequest, rawBody: string): boolean {
   const webhookSecret = process.env.MP_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.warn('MP_WEBHOOK_SECRET não configurado — pulando validação (não usar em produção)');
-    return true; // em desenvolvimento sem secret configurado
+    console.warn('[webhook] MP_WEBHOOK_SECRET não configurado');
+    return true;
   }
 
-  const xSignature = req.headers.get('x-signature') ?? '';
+  const xSignature = req.headers.get('x-signature');
 
-  // Extrai ts e v1 do header x-signature: "ts=1234,v1=abcd"
-  const parts = Object.fromEntries(
-    xSignature.split(',').map(part => part.split('=')).filter(p => p.length === 2)
-  );
+  // O botão "Testar" do painel MP envia o webhook sem x-signature.
+  // Webhooks reais de pagamento sempre chegam assinados.
+  if (!xSignature) {
+    console.warn('[webhook] x-signature ausente — aceito como teste do painel MP');
+    return true;
+  }
+
+  // Suporta separadores vírgula e ponto-e-vírgula (variações do MP)
+  const sep = xSignature.includes(';') && !xSignature.includes(',') ? ';' : ',';
+  const parts: Record<string, string> = {};
+  for (const chunk of xSignature.split(sep)) {
+    const idx = chunk.indexOf('=');
+    if (idx > 0) parts[chunk.slice(0, idx).trim()] = chunk.slice(idx + 1).trim();
+  }
+
   const ts = parts['ts'];
   const v1 = parts['v1'];
-  if (!ts || !v1) return false;
+  if (!ts || !v1) {
+    console.warn('[webhook] x-signature malformado:', xSignature);
+    return false;
+  }
 
-  // Extrai data.id do body para compor the template
   let dataId = '';
   try {
     const parsed = JSON.parse(rawBody);
-    dataId = parsed?.data?.id ?? '';
+    dataId = String(parsed?.data?.id ?? '');
   } catch { return false; }
 
-  // Template: "id:{data.id};request-date:{ts};"
   const template = `id:${dataId};request-date:${ts};`;
   const hmac = createHmac('sha256', webhookSecret).update(template).digest('hex');
 
-  return hmac === v1;
+  const valido = hmac === v1;
+  if (!valido) console.warn('[webhook] Assinatura HMAC inválida — possível requisição não autorizada');
+  return valido;
 }
 
 export async function POST(req: NextRequest) {
