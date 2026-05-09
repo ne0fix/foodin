@@ -94,6 +94,8 @@ export async function POST(req: NextRequest) {
       case 'approved':           return 'PAID';
       case 'rejected':
       case 'cancelled':          return 'FAILED';
+      // 'pending' e 'in_process' do MP equivalem ao nosso PENDING_PAYMENT —
+      // não rebaixar para PROCESSING pois o QR Code ainda precisa ser exibido
       case 'in_process':
       case 'pending':            return 'PROCESSING';
       default:                   return null;
@@ -101,6 +103,12 @@ export async function POST(req: NextRequest) {
   })();
 
   if (!novoStatus) return NextResponse.json({ received: true });
+
+  // Não "rebaixar" de PENDING_PAYMENT para PROCESSING — são o mesmo estado
+  // semântico e o rebaixamento fazia a página sumir com o QR Code do PIX
+  if (order.status === 'PENDING_PAYMENT' && novoStatus === 'PROCESSING') {
+    return NextResponse.json({ received: true });
+  }
 
   await prisma.order.update({
     where: { id: orderId },

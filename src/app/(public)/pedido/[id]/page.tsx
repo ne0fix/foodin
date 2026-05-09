@@ -102,7 +102,10 @@ export default function PedidoPage() {
   }
 
   // ─── AGUARDANDO PIX ──────────────────────────────────────────────────────
-  if (pedido.metodo === 'PIX' && pedido.status === 'PENDING_PAYMENT') {
+  // Mostra QR Code se for PIX, tiver o código e o pagamento não foi concluído.
+  // PROCESSING também é válido — o webhook do MP pode atualizar antes do cliente ver o QR.
+  if (pedido.metodo === 'PIX' && pedido.qrCode &&
+      (pedido.status === 'PENDING_PAYMENT' || pedido.status === 'PROCESSING')) {
     return (
       <div className="container mx-auto px-4 max-w-lg py-8">
         <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center space-y-5">
