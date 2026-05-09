@@ -88,6 +88,40 @@ export function useCarrinhoViewModel() {
     notificar();
   }, []);
 
+  // Atualiza preços do carrinho buscando os valores atuais da API.
+  // Chamado no início do checkout para evitar exibir preços desatualizados.
+  const refreshPrecos = useCallback(async () => {
+    const itensAtuais = lerStorage();
+    if (!itensAtuais.length) return;
+
+    try {
+      const resultados = await Promise.all(
+        itensAtuais.map(item =>
+          fetch(`/api/produtos/${item.produto.id}`)
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null)
+        )
+      );
+
+      let atualizado = false;
+      resultados.forEach((produto, i) => {
+        if (produto?.preco !== undefined) {
+          const novoPreco = parseFloat(produto.preco);
+          if (itensAtuais[i].produto.preco !== novoPreco) {
+            itensAtuais[i].produto.preco = novoPreco;
+            itensAtuais[i].produto.nome  = produto.nome ?? itensAtuais[i].produto.nome;
+            atualizado = true;
+          }
+        }
+      });
+
+      if (atualizado) {
+        salvarStorage(itensAtuais);
+        notificar();
+      }
+    } catch { /* ignora erros de rede */ }
+  }, []);
+
   return {
     itens,
     quantidadeTotal: itens.reduce((acc, item) => acc + item.quantidade, 0),
@@ -98,5 +132,6 @@ export function useCarrinhoViewModel() {
     removerItem,
     atualizarQuantidade,
     limparCarrinho,
+    refreshPrecos,
   };
 }

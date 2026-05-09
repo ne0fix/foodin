@@ -14,7 +14,7 @@ export type CheckoutStep = 1 | 2 | 3;
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { itens, subtotal, limparCarrinho } = useCarrinhoViewModel();
+  const { itens, subtotal, limparCarrinho, refreshPrecos } = useCarrinhoViewModel();
   const [hidratado, setHidratado] = useState(false);
   // Impede redirect para /carrinho quando o pedido foi finalizado com sucesso
   const finalizando = useRef(false);
@@ -28,10 +28,14 @@ export default function CheckoutPage() {
   useEffect(() => { setHidratado(true); }, []);
 
   useEffect(() => {
-    if (hidratado && itens.length === 0 && !finalizando.current) {
+    if (!hidratado) return;
+    if (itens.length === 0 && !finalizando.current) {
       router.replace('/carrinho');
+      return;
     }
-  }, [hidratado, itens.length, router]);
+    // Atualiza preços do localStorage com os valores atuais da API
+    refreshPrecos();
+  }, [hidratado]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!hidratado) {
     return (
