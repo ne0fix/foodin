@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { Prisma } from '@prisma/client';
 import prisma from '@/src/lib/prisma';
 import { produtoToAdminDTO } from '@/src/lib/dto';
@@ -84,6 +85,10 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        revalidatePath('/admin/dashboard');
+        revalidatePath('/admin/produtos');
+        revalidatePath('/');
+        revalidatePath('/produtos');
         return NextResponse.json(produtoToAdminDTO(newProduto), { status: 201 });
 
     } catch (error) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/src/lib/prisma';
 import { produtoToAdminDTO } from '@/src/lib/dto';
 import { ProdutoUpdateSchema } from '@/src/utils/validators';
@@ -57,6 +58,10 @@ export async function PUT(
       });
     });
 
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/admin/produtos');
+    revalidatePath(`/produto/${id}`);
+    revalidatePath('/');
     return NextResponse.json(produtoToAdminDTO(produto));
   } catch (error) {
     console.error('Erro ao atualizar produto:', error);
@@ -71,6 +76,11 @@ export async function DELETE(
   try {
     const { id } = await params;
     await prisma.produto.update({ where: { id }, data: { ativo: false } });
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/admin/produtos');
+    revalidatePath(`/produto/${id}`);
+    revalidatePath('/');
+    revalidatePath('/produtos');
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('Erro ao excluir produto:', error);

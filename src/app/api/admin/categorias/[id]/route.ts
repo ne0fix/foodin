@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/src/lib/prisma';
 import { CategoriaUpdateSchema } from '@/src/utils/validators';
 
@@ -21,6 +22,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       data: validation.data,
     });
 
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/admin/categorias');
+    revalidatePath('/');
+    revalidatePath('/produtos');
     return NextResponse.json(categoria);
   } catch (error) {
     console.error('Erro ao atualizar categoria:', error);
@@ -52,6 +57,10 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     }
 
     await prisma.categoria.delete({ where: { id } });
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/admin/categorias');
+    revalidatePath('/');
+    revalidatePath('/produtos');
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('Erro ao excluir categoria:', error);

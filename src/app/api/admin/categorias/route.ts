@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/src/lib/prisma';
 import { CategoriaCreateSchema } from '@/src/utils/validators';
 import { Prisma } from '@prisma/client';
@@ -32,6 +33,10 @@ export async function POST(request: NextRequest) {
             data: validation.data,
         });
 
+        revalidatePath('/admin/dashboard');
+        revalidatePath('/admin/categorias');
+        revalidatePath('/');
+        revalidatePath('/produtos');
         return NextResponse.json(newCategoria, { status: 201 });
 
     } catch (error) {

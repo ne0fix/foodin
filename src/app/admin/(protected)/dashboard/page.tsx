@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import prisma from '@/src/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import ProductThumb from '@/src/components/admin/ui/ProductThumb';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import {
