@@ -80,7 +80,10 @@ export default function PedidoPage() {
         <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Pagamento confirmado!</h1>
         <p className="text-gray-500 mb-2">Pedido <span className="font-bold">#{id.slice(-8).toUpperCase()}</span></p>
         <p className="text-2xl font-black text-green-600 mb-8">{formatarMoeda(pedido.total)}</p>
-        <Link href="/produtos" className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full transition-colors">
+        <Link href="/cliente/pedidos" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-colors mb-4 block w-fit mx-auto">
+          Ir para meus pedidos
+        </Link>
+        <Link href="/produtos" className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full transition-colors block w-fit mx-auto">
           Continuar comprando
         </Link>
       </div>

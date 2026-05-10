@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  overflow-y: scroll; /* scrollbar sempre reservada — evita layout shift ao aparecer */
+}
+
 /*
   Paleta green baseada em #008641 como green-600.
   Gerada mantendo H≈145°, S~100%, variando Lightness.

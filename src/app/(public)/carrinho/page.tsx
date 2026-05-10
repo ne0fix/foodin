@@ -12,7 +12,28 @@ export default function CarrinhoPage() {
   const router = useRouter();
   const { itens, total, subtotal, freteEstimado, atualizarQuantidade, removerItem, limparCarrinho, quantidadeTotal } = useCarrinhoViewModel();
   const [hidratado, setHidratado] = useState(false);
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
   useEffect(() => { setHidratado(true); }, []);
+
+  const handleFinalizarCompra = async () => {
+    if (loadingCheckout) return;
+    setLoadingCheckout(true);
+    try {
+      const res = await fetch('/api/cliente/me');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.id) {
+          router.push('/checkout');
+          return;
+        }
+      }
+      router.push('/cliente/login?redirect=/checkout');
+    } catch {
+      router.push('/cliente/login?redirect=/checkout');
+    } finally {
+      setLoadingCheckout(false);
+    }
+  };
 
   if (!hidratado) {
     return (
@@ -198,10 +219,11 @@ export default function CarrinhoPage() {
             </div>
 
             <button
-              onClick={() => router.push('/checkout')}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-base mb-5 shadow-md shadow-green-600/25 transition-all hover:-translate-y-0.5"
+              onClick={handleFinalizarCompra}
+              disabled={loadingCheckout}
+              className="w-full flex justify-center items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-base mb-5 shadow-md shadow-green-600/25 transition-all hover:-translate-y-0.5 disabled:opacity-70"
             >
-              Finalizar Compra
+              {loadingCheckout ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Finalizar Compra'}
             </button>
 
             <p className="text-[10px] text-gray-400 text-center mt-2">

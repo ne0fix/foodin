@@ -46,7 +46,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <meta name="twitter:description" content="Compre no Super G & N em Pacatuba, CE. Entrega rápida!" />
         <meta name="twitter:image" content={OG_IMAGE} />
       </head>
-      <body className="min-h-screen flex flex-col font-sans bg-white overflow-x-hidden" suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col font-sans bg-white" suppressHydrationWarning>
         {children}
       </body>
     </html>

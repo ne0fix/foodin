@@ -40,9 +40,15 @@ export default function CheckoutPage() {
 
     // Verificar se há cliente logado
     fetch('/api/cliente/me')
-      .then(r => r.ok ? r.json() : null)
+      .then(r => {
+        if (r.status === 401) {
+          router.replace('/cliente/login?redirect=/checkout');
+          return null;
+        }
+        return r.ok ? r.json() : null;
+      })
       .then(data => {
-        if (data?.id) {
+        if (data && data.id) {
           setClienteLogado(data);
           // Pré-preencher comprador
           setComprador({
@@ -70,9 +76,16 @@ export default function CheckoutPage() {
               .then(f => setFrete(f.frete))
               .catch(() => {});
           }
+        } else if (data === null) {
+          // Se não houver dados e não foi redirecionado no catch
+          // (mas a API costuma retornar 401 que é tratado acima)
+        } else {
+          router.replace('/cliente/login?redirect=/checkout');
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        router.replace('/cliente/login?redirect=/checkout');
+      });
   }, [hidratado]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!hidratado) {

@@ -190,42 +190,19 @@ function LoginContent() {
                 : "Entrar na conta"}
             </button>
 
-            {/* Divisor "Ou. Acesse com" */}
-            <div className="flex items-center gap-3 py-1">
-              <div className="flex-1 h-px bg-gray-100" />
-              <span className="text-xs font-semibold text-gray-400">Ou. Acesse com</span>
-              <div className="flex-1 h-px bg-gray-100" />
-            </div>
-
-            {/* Três círculos de acesso rápido */}
-            <div className="flex justify-center gap-4">
-              <Link href="/produtos" title="Produtos"
-                className="w-12 h-12 bg-amber-400 hover:bg-amber-500 flex items-center justify-center rounded-full text-white font-black text-base transition-all active:scale-95 shadow-sm shadow-amber-400/40">
-                A
-              </Link>
-              <Link href="/carrinho" title="Carrinho"
-                className="w-12 h-12 bg-green-600 hover:bg-green-700 flex items-center justify-center rounded-full text-white font-black text-base transition-all active:scale-95 shadow-sm shadow-green-600/40">
-                B
-              </Link>
-              <Link href="/cadastro" title="Cadastro"
-                className="w-12 h-12 bg-emerald-700 hover:bg-emerald-800 flex items-center justify-center rounded-full text-white font-black text-base transition-all active:scale-95 shadow-sm shadow-emerald-700/40">
-                C
+            {/* Não tem uma conta? */}
+            <div className="flex flex-col items-center gap-1 pt-1">
+              <p className="text-gray-400 text-sm">Não tem uma conta?</p>
+              <Link
+                href="/cadastro"
+                className="text-green-600 font-black text-base hover:underline underline-offset-2 tracking-wide transition-colors"
+              >
+                Criar Conta
               </Link>
             </div>
 
           </div>
         </div>
-      </div>
-
-      {/* ── Rodapé sobre o gradiente — sempre ao final do conteúdo ── */}
-      <div className="py-8 flex flex-col items-center gap-1">
-        <p className="text-green-300 text-sm">Não tem uma conta?</p>
-        <Link
-          href="/cadastro"
-          className="text-white font-black text-base hover:underline underline-offset-2 tracking-wide"
-        >
-          Criar Conta
-        </Link>
       </div>
 
     </div>
