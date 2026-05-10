@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, CheckCircle } from "lucide-react";
 import { formatarCPF } from "@/src/utils/validators";
 
 function LoginContent() {
@@ -52,46 +52,61 @@ function LoginContent() {
   };
 
   return (
-    /*
-     * h-[100dvh] + overflow-hidden no main garante que nada ultrapasse
-     * a altura da tela em mobile. sm: volta ao comportamento normal (scroll ok).
-     */
-    <main className="h-[100dvh] overflow-hidden sm:h-auto sm:min-h-screen flex items-center justify-center bg-gray-200/50 sm:p-6 lg:p-8">
+    /* ── Layout Mobile First ─────────────────────────────────────────────────
+     * min-h-screen + flex-col: a página cresce naturalmente com o conteúdo.
+     * Sem h-screen ou overflow-hidden — nada é cortado em telas pequenas.
+     * Gradiente verde do topo ao rodapé, card branco centralizado no meio.
+     * ──────────────────────────────────────────────────────────────────────── */
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-700 via-green-700 to-green-900">
 
-      {/* Frame — ocupa 100% da tela em mobile, max-w-[400px] centrado no desktop */}
-      <div className="relative w-full h-full sm:h-auto sm:max-w-[400px] bg-[#FBFDFF] sm:rounded-[36px] shadow-2xl overflow-hidden flex flex-col">
+      {/* ── Área central: logo + card ── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-5 py-10">
 
-        {/* ── Área de conteúdo: logo + card (flex-1 centraliza verticalmente) ── */}
-        <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-5">
+        {/* Logo */}
+        <Link href="/" className="mb-7">
+          <Image
+            src="/gn2.png"
+            alt="Ekomart"
+            width={160}
+            height={64}
+            className="h-12 w-auto brightness-0 invert"
+            priority
+          />
+        </Link>
 
-          {/* Logo */}
-          <Link href="/" className="mb-5">
-            <Image src="/gn2.png" alt="Ekomart" width={150} height={60} className="h-10 w-auto" />
-          </Link>
+        {/* Card branco */}
+        <div className="w-full max-w-[390px] bg-white rounded-3xl shadow-2xl overflow-hidden">
 
-          {/* Card */}
-          <div className="w-full bg-[#FAFBFC] rounded-3xl px-5 py-5 shadow-[0_12px_44px_-12px_rgba(0,0,0,0.15)] z-20">
-
-            <h2 className="text-[20px] font-bold text-center text-[#1A1A1A] mb-5">
+          {/* Cabeçalho do card */}
+          <div className="px-7 pt-7 pb-5">
+            <h2 className="text-xl font-black text-gray-900 text-center tracking-tight">
               Entrar na conta
             </h2>
+          </div>
 
+          {/* Corpo do card */}
+          <div className="px-7 pb-7 space-y-4">
+
+            {/* Toast de cadastro concluído */}
             {sucesso && (
-              <div className="mb-3 bg-green-50 border border-green-200 text-green-700 text-xs font-bold px-3 py-2 rounded-xl text-center">
-                ✅ Conta criada! Faça seu login.
+              <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-4 py-3 rounded-2xl">
+                <CheckCircle size={16} className="flex-shrink-0" />
+                Conta criada! Faça seu login.
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-3">
-
-              {/* CPF */}
-              <div className="flex items-center bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm focus-within:shadow-md transition-shadow">
-                <Mail size={15} className="text-[#0D0D0D] mr-3 flex-shrink-0" strokeWidth={3} />
+            {/* Campo CPF */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                CPF
+              </label>
+              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 gap-3 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-500/15 transition-all">
+                <Mail size={16} className="text-gray-400 flex-shrink-0" strokeWidth={2.5} />
                 <input
                   type="text"
                   inputMode="numeric"
                   maxLength={14}
-                  placeholder="CPF (000.000.000-00)"
+                  placeholder="000.000.000-00"
                   value={cpf}
                   onChange={e => { setCpf(formatarCPF(e.target.value)); setErro(""); }}
                   onBlur={() => {
@@ -100,126 +115,128 @@ function LoginContent() {
                     }
                   }}
                   autoComplete="off"
-                  className="flex-1 bg-transparent border-none outline-none text-[13px] font-bold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
+                  className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 placeholder:text-gray-300 placeholder:font-normal"
                 />
               </div>
+            </div>
 
-              {/* PIN */}
-              <div className="flex items-center bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm focus-within:shadow-md transition-shadow">
-                <Lock size={15} className="text-[#0D0D0D] mr-3 flex-shrink-0" strokeWidth={3} />
+            {/* Campo PIN */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                PIN de acesso
+              </label>
+              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 gap-3 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-500/15 transition-all">
+                <Lock size={16} className="text-gray-400 flex-shrink-0" strokeWidth={2.5} />
                 <input
                   id="pin-input"
                   type="password"
                   inputMode="numeric"
                   maxLength={4}
-                  placeholder="PIN de 4 dígitos"
+                  placeholder="••••"
                   value={pin}
                   onChange={e => { setPin(e.target.value.replace(/\D/g, "").slice(0, 4)); setErro(""); }}
                   autoComplete="off"
-                  className="flex-1 bg-transparent border-none outline-none text-[13px] font-bold text-gray-800 placeholder:text-gray-400 placeholder:font-normal tracking-[0.4em]"
+                  className="flex-1 bg-transparent outline-none text-xl font-black text-gray-800 placeholder:text-gray-300 placeholder:font-normal placeholder:text-base tracking-[0.5em]"
                 />
-                <div className="flex gap-1 ml-2">
+                {/* Indicador de progresso */}
+                <div className="flex gap-1.5 flex-shrink-0">
                   {[0, 1, 2, 3].map(i => (
-                    <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i < pin.length ? "bg-green-600" : "bg-gray-300"}`} />
+                    <div key={i} className={`w-2 h-2 rounded-full transition-all duration-200 ${i < pin.length ? "bg-green-500 scale-110" : "bg-gray-200"}`} />
                   ))}
                 </div>
               </div>
-
-              {/* Salvar acesso + Esqueci PIN */}
-              <div className="flex items-center justify-between py-0.5">
-                <label className="flex items-center cursor-pointer">
-                  <div className="relative flex items-center justify-center w-4 h-4 mr-2">
-                    <input
-                      type="checkbox"
-                      checked={salvarAcesso}
-                      onChange={e => setSalvarAcesso(e.target.checked)}
-                      className="peer appearance-none w-4 h-4 rounded bg-green-500 checked:bg-green-600 outline-none cursor-pointer"
-                    />
-                    <svg className="absolute w-2.5 h-2.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"
-                      viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                  <span className="text-[11px] font-bold text-[#1A1A1A] select-none">Salvar acesso</span>
-                </label>
-                <button type="button" className="text-[11px] font-bold text-[#1A1A1A] hover:underline">
-                  Esqueci meu PIN
-                </button>
-              </div>
-
-              {/* Erro */}
-              {erro && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-xl text-xs font-bold text-center">
-                  {erro}
-                </div>
-              )}
-
-              {/* Botão */}
-              <button
-                type="submit"
-                disabled={carregando}
-                className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-60 active:scale-[0.98]
-                  transition-all text-white text-[15px] font-bold py-3.5 rounded-xl
-                  shadow-[0_8px_20px_-8px_rgba(22,163,74,0.7)]
-                  flex items-center justify-center gap-2"
-              >
-                {carregando
-                  ? <><Loader2 size={17} className="animate-spin" /> Entrando...</>
-                  : "Entrar na conta"}
-              </button>
-            </form>
-
-            {/* Or. Acesse com */}
-            <div className="text-center mt-4 mb-3">
-              <span className="text-[11px] font-bold text-gray-800/80">Ou. Acesse com</span>
             </div>
 
-            {/* Três círculos */}
-            <div className="flex justify-center items-center gap-3 mb-1">
-              <Link href="/produtos"
-                className="w-11 h-11 bg-[#F9B94F] flex items-center justify-center rounded-full text-white font-bold text-base hover:opacity-90 transition-opacity shadow-sm">
+            {/* Salvar acesso + Esqueci PIN */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <div className="relative w-4 h-4">
+                  <input
+                    type="checkbox"
+                    checked={salvarAcesso}
+                    onChange={e => setSalvarAcesso(e.target.checked)}
+                    className="peer appearance-none w-4 h-4 rounded bg-gray-200 checked:bg-green-600 outline-none cursor-pointer transition-colors"
+                  />
+                  <svg className="absolute inset-0 w-full h-full text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity p-0.5"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <span className="text-xs font-semibold text-gray-600">Salvar acesso</span>
+              </label>
+              <button type="button" className="text-xs font-semibold text-green-600 hover:text-green-700 hover:underline transition-colors">
+                Esqueci meu PIN
+              </button>
+            </div>
+
+            {/* Erro */}
+            {erro && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-sm font-semibold text-center">
+                {erro}
+              </div>
+            )}
+
+            {/* Botão principal */}
+            <button
+              type="button"
+              onClick={() => handleLogin()}
+              disabled={carregando}
+              className="w-full bg-green-600 hover:bg-green-700 active:scale-[0.98] disabled:opacity-60
+                text-white font-bold py-4 rounded-2xl transition-all duration-200 mt-1
+                shadow-lg shadow-green-600/30 flex items-center justify-center gap-2 text-[15px]"
+            >
+              {carregando
+                ? <><Loader2 size={18} className="animate-spin" /> Entrando...</>
+                : "Entrar na conta"}
+            </button>
+
+            {/* Divisor "Ou. Acesse com" */}
+            <div className="flex items-center gap-3 py-1">
+              <div className="flex-1 h-px bg-gray-100" />
+              <span className="text-xs font-semibold text-gray-400">Ou. Acesse com</span>
+              <div className="flex-1 h-px bg-gray-100" />
+            </div>
+
+            {/* Três círculos de acesso rápido */}
+            <div className="flex justify-center gap-4">
+              <Link href="/produtos" title="Produtos"
+                className="w-12 h-12 bg-amber-400 hover:bg-amber-500 flex items-center justify-center rounded-full text-white font-black text-base transition-all active:scale-95 shadow-sm shadow-amber-400/40">
                 A
               </Link>
-              <Link href="/carrinho"
-                className="w-11 h-11 bg-green-600 flex items-center justify-center rounded-full text-white font-bold text-base hover:opacity-90 transition-opacity shadow-sm">
+              <Link href="/carrinho" title="Carrinho"
+                className="w-12 h-12 bg-green-600 hover:bg-green-700 flex items-center justify-center rounded-full text-white font-black text-base transition-all active:scale-95 shadow-sm shadow-green-600/40">
                 B
               </Link>
-              <Link href="/cadastro"
-                className="w-11 h-11 bg-green-700 flex items-center justify-center rounded-full text-white font-bold text-base hover:opacity-90 transition-opacity shadow-sm">
+              <Link href="/cadastro" title="Cadastro"
+                className="w-12 h-12 bg-emerald-700 hover:bg-emerald-800 flex items-center justify-center rounded-full text-white font-black text-base transition-all active:scale-95 shadow-sm shadow-emerald-700/40">
                 C
               </Link>
             </div>
 
           </div>
         </div>
-
-        {/* Wave SVG */}
-        <div className="absolute bottom-0 left-0 right-0 h-[30%] z-0 overflow-hidden pointer-events-none">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none"
-            className="absolute -top-10 left-0 w-[150%] h-[150%] transform -translate-x-10"
-            style={{ color: "#15803d" }}>
-            <path d="M0,40 C30,30 50,60 100,20 L100,100 L0,100 Z" fill="currentColor" />
-          </svg>
-        </div>
-
-        {/* Rodapé — altura fixa e compacta */}
-        <div className="relative z-10 w-full flex flex-col items-center justify-center py-4">
-          <p className="text-white/80 text-[11px] font-medium">Não tem uma conta?</p>
-          <Link href="/cadastro" className="text-white text-[13px] font-bold hover:underline">
-            Criar Conta
-          </Link>
-        </div>
-
       </div>
-    </main>
+
+      {/* ── Rodapé sobre o gradiente — sempre ao final do conteúdo ── */}
+      <div className="py-8 flex flex-col items-center gap-1">
+        <p className="text-green-300 text-sm">Não tem uma conta?</p>
+        <Link
+          href="/cadastro"
+          className="text-white font-black text-base hover:underline underline-offset-2 tracking-wide"
+        >
+          Criar Conta
+        </Link>
+      </div>
+
+    </div>
   );
 }
 
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="h-[100dvh] overflow-hidden flex items-center justify-center bg-gray-200/50">
-        <Loader2 className="animate-spin text-green-600" size={36} />
+      <div className="min-h-screen flex items-center justify-center bg-green-800">
+        <Loader2 className="animate-spin text-white" size={36} />
       </div>
     }>
       <LoginContent />
