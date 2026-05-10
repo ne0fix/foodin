@@ -56,52 +56,15 @@ function LoginContent() {
     <main className="min-h-screen flex items-center justify-center bg-gray-200/50 sm:p-6 lg:p-8">
 
       {/* ── Frame mobile idêntico ao clone ── */}
-      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-w-[400px] bg-[#FBFDFF] sm:rounded-[36px] shadow-2xl overflow-hidden flex flex-col justify-between">
+      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-w-[400px] bg-[#FBFDFF] sm:rounded-[36px] shadow-2xl overflow-hidden flex flex-col">
 
-        {/* ── Conteúdo superior (ícone + título + card) ── */}
-        <div className="relative z-10 flex flex-col items-center pt-[10dvh] sm:pt-12 px-6 pb-20">
+        {/* ── Conteúdo centralizado: logo + card ── */}
+        <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 pb-20 pt-8">
 
           {/* Logo do projeto */}
-          <Link href="/" className="mb-4">
-            <Image src="/gn2.png" alt="Ekomart" width={140} height={56} className="h-10 w-auto" />
+          <Link href="/" className="mb-8">
+            <Image src="/gn2.png" alt="Ekomart" width={180} height={72} className="h-14 w-auto" />
           </Link>
-
-          {/* Ilustração: cadeado + figura humana — estrutura idêntica ao clone, cores do projeto */}
-          <div className="relative w-32 h-24 mb-6 flex justify-center items-end">
-            {/* Sombra sob o gráfico */}
-            <div className="absolute bottom-0 w-24 h-2 bg-gray-300/60 rounded-[100%] blur-[2px]" />
-
-            {/* Corpo do cadeado — azul original → verde do projeto */}
-            <div className="relative z-10 w-[60px] h-[45px] bg-green-600 rounded-[10px] flex items-center justify-center shadow-sm">
-              {/* Buraco da chave */}
-              <div className="flex flex-col items-center mt-1">
-                <div className="w-2.5 h-2.5 bg-white rounded-full" />
-                <div className="w-1.5 h-3 bg-white rounded-b-sm -mt-0.5" />
-              </div>
-            </div>
-
-            {/* Arco do cadeado — #91C1E6 original → green-300 */}
-            <svg className="absolute top-[2px] left-[42px] z-0 w-[46px] h-[44px]" viewBox="0 0 46 44" fill="none">
-              <path d="M 6 44 L 6 23 C 6 12 14 4 23 4 C 32 4 40 12 40 23 L 40 28"
-                stroke="#86efac" strokeWidth="6" strokeLinecap="round" />
-            </svg>
-
-            {/* Figura humana amarela — cor mantida (elemento de design) */}
-            <div className="absolute -right-2 bottom-0 z-20 w-[42px] h-[46px] flex flex-col items-center">
-              <div className="w-[22px] h-[22px] bg-[#EEBA4A] rounded-full shadow-sm z-30" />
-              <div className="w-[42px] h-[20px] bg-[#EEBA4A] rounded-t-[18px] -mt-1 shadow-sm relative z-20" />
-            </div>
-          </div>
-
-          {/* Títulos */}
-          <div className="text-center mb-8 px-2">
-            <h1 className="text-[28px] leading-tight font-extrabold text-[#0D0D0D] mb-3 font-sans tracking-tight">
-              Bem-vindo de volta!
-            </h1>
-            <p className="text-[11px] font-bold text-gray-500 leading-tight max-w-[280px] mx-auto opacity-70">
-              Acesse sua conta com CPF e PIN para ver seus pedidos e aproveitar todas as vantagens.
-            </p>
-          </div>
 
           {/* ── Card de login — estrutura idêntica ao clone ── */}
           <div className="w-full bg-[#FAFBFC] rounded-3xl p-6 shadow-[0_12px_44px_-12px_rgba(0,0,0,0.15)] relative z-20 mt-2">
