@@ -74,35 +74,35 @@ export default function PedidosPage() {
               <Link 
                 key={pedido.id} 
                 href={`/cliente/pedidos/${pedido.id}`}
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-6 hover:bg-gray-50 transition-colors gap-4"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors gap-4"
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Package size={24} />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Package size={20} className="sm:w-6 sm:h-6" />
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-base font-bold text-gray-900">Pedido #{pedido.numero}</p>
-                    <p className="text-sm text-gray-500">
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-sm sm:text-base font-bold text-gray-900">Pedido #{pedido.numero}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">
                       {new Date(pedido.criadoEm).toLocaleDateString('pt-BR', {
                         day: '2-digit',
-                        month: 'long',
+                        month: 'short',
                         year: 'numeric'
                       })}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-[10px] sm:text-xs text-gray-400">
                       {pedido.itens} {pedido.itens === 1 ? 'item' : 'itens'} · {pedido.metodoPagamento}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-4 sm:pt-0">
+                <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 border-t border-gray-100 sm:border-t-0 pt-3 sm:pt-0 mt-1 sm:mt-0">
                   <div className="text-left sm:text-right">
-                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Total</p>
-                    <p className="text-lg font-black text-green-600">{formatarMoeda(pedido.total)}</p>
+                    <p className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold tracking-wider">Total</p>
+                    <p className="text-base sm:text-lg font-black text-green-600">{formatarMoeda(pedido.total)}</p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <StatusBadge status={pedido.statusCliente} />
-                    <ChevronRight size={20} className="text-gray-300 hidden sm:block" />
+                    <ChevronRight size={18} className="text-gray-300 hidden sm:block" />
                   </div>
                 </div>
               </Link>
