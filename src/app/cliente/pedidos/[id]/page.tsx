@@ -124,7 +124,7 @@ export default function PedidoDetalhePage() {
 
         <div className="pt-4 border-t border-gray-100">
           <p className="text-[11px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4">Progresso do Pedido</p>
-          <div className="w-full">
+          <div className="overflow-hidden sm:overflow-visible">
             <OrderTimeline statusAtual={pedido.statusCliente} entregaTipo={pedido.entregaTipo} />
           </div>
         </div>
