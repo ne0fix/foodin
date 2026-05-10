@@ -155,7 +155,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string, o
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-4">
               <h3 className="font-bold text-gray-900">Progresso do Pedido</h3>
               <div className="w-full">
-                <OrderTimeline statusAtual={pedido.statusCliente} entregaTipo={pedido.entregaTipo} />
+                <OrderTimeline statusAtual={pedido.statusCliente ?? pedido.status} entregaTipo={pedido.entregaTipo} />
               </div>
               {pedido.statusCliente === 'EM_SEPARACAO' && (
                 <div className="flex justify-end pt-2">

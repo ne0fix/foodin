@@ -89,7 +89,7 @@ export default function PedidoDetalhePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-4xl mx-auto space-y-6 pb-12 overflow-x-hidden animate-in fade-in duration-500">
       
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -219,7 +219,7 @@ export default function PedidoDetalhePage() {
                 <CreditCard size={18} /> Pagamento
               </h3>
               <span className="transition group-open:rotate-180">
-                <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
               </span>
             </summary>
             <div className="p-4 sm:p-5 pt-0 border-t border-gray-100 text-sm">
@@ -235,7 +235,7 @@ export default function PedidoDetalhePage() {
                 <MapPin size={18} /> Entrega
               </h3>
               <span className="transition group-open:rotate-180">
-                <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
               </span>
             </summary>
             <div className="p-4 sm:p-5 pt-0 border-t border-gray-100 text-sm">
