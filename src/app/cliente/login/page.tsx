@@ -62,30 +62,25 @@ function LoginContent() {
       {/* ── Área central: logo + card ── */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-10">
 
-        {/* Logo */}
-        <Link href="/" className="mb-7">
-          <Image
-            src="/gn2.png"
-            alt="Ekomart"
-            width={160}
-            height={64}
-            className="h-12 w-auto brightness-0 invert"
-            priority
-          />
-        </Link>
-
         {/* Card branco */}
         <div className="w-full max-w-[390px] bg-white rounded-3xl shadow-2xl overflow-hidden">
 
           {/* Cabeçalho do card */}
-          <div className="px-7 pt-7 pb-5">
-            <h2 className="text-xl font-black text-gray-900 text-center tracking-tight">
-              Entrar na conta
-            </h2>
+          <div className="px-7 pt-7 pb-5 flex justify-center">
+            <Link href="/">
+              <Image
+                src="/gn2.png"
+                alt="Ekomart"
+                width={160}
+                height={64}
+                className="h-12 w-auto"
+                priority
+              />
+            </Link>
           </div>
 
           {/* Corpo do card */}
-          <div className="px-7 pb-7 space-y-4">
+          <div className="px-7 pb-7 flex flex-col space-y-4 w-full">
 
             {/* Toast de cadastro concluído */}
             {sucesso && (
@@ -115,7 +110,7 @@ function LoginContent() {
                     }
                   }}
                   autoComplete="off"
-                  className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 placeholder:text-gray-300 placeholder:font-normal"
+                  className="appearance-none flex-1 min-w-0 w-full bg-transparent outline-none focus:outline-none focus:ring-0 border-none p-0 text-sm font-semibold text-gray-800 placeholder:text-gray-300 placeholder:font-normal"
                 />
               </div>
             </div>
@@ -136,7 +131,7 @@ function LoginContent() {
                   value={pin}
                   onChange={e => { setPin(e.target.value.replace(/\D/g, "").slice(0, 4)); setErro(""); }}
                   autoComplete="off"
-                  className="flex-1 bg-transparent outline-none text-xl font-black text-gray-800 placeholder:text-gray-300 placeholder:font-normal placeholder:text-base tracking-[0.5em]"
+                  className="appearance-none flex-1 min-w-0 w-full bg-transparent outline-none focus:outline-none focus:ring-0 border-none p-0 text-xl font-black text-gray-800 placeholder:text-gray-300 placeholder:font-normal placeholder:text-base tracking-[0.5em] [&::-ms-reveal]:hidden [&::-webkit-contacts-auto-fill-button]:hidden"
                 />
                 {/* Indicador de progresso */}
                 <div className="flex gap-1.5 flex-shrink-0">
@@ -170,11 +165,13 @@ function LoginContent() {
             </div>
 
             {/* Erro */}
-            {erro && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-sm font-semibold text-center">
-                {erro}
-              </div>
-            )}
+            <div className="min-h-[48px] w-full flex items-center justify-center -my-1">
+              {erro && (
+                <div className="w-full bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-sm font-semibold text-center animate-in fade-in duration-200">
+                  {erro}
+                </div>
+              )}
+            </div>
 
             {/* Botão principal */}
             <button
