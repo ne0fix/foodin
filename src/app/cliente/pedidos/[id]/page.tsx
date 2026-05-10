@@ -104,7 +104,7 @@ export default function PedidoDetalhePage() {
       </div>
 
       {/* Status e Timeline */}
-      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 space-y-5 sm:space-y-6">
+      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6 space-y-5 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="space-y-1">
             <p className="text-xs sm:text-sm text-gray-500">
@@ -170,7 +170,7 @@ export default function PedidoDetalhePage() {
       <div className="flex flex-col gap-6">
         
         {/* Itens */}
-        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-gray-100">
             <h3 className="font-bold text-gray-900 flex items-center gap-2">
               <Package size={18} className="text-gray-400" />
@@ -213,7 +213,7 @@ export default function PedidoDetalhePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           
           {/* Pagamento */}
-          <details className="group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" open>
+          <details className="group bg-white rounded-2xl border border-gray-100 overflow-hidden" open>
             <summary className="p-4 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none min-h-[44px]">
               <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm uppercase tracking-wider text-gray-500">
                 <CreditCard size={18} /> Pagamento
@@ -229,7 +229,7 @@ export default function PedidoDetalhePage() {
           </details>
 
           {/* Entrega */}
-          <details className="group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" open>
+          <details className="group bg-white rounded-2xl border border-gray-100 overflow-hidden" open>
             <summary className="p-4 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none min-h-[44px]">
               <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm uppercase tracking-wider text-gray-500">
                 <MapPin size={18} /> Entrega
