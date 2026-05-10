@@ -24,6 +24,8 @@ export default function CheckoutPage() {
   const [comprador, setComprador] = useState<DadosComprador | null>(null);
   const [entrega, setEntrega]     = useState<DadosEntrega | null>(null);
   const [frete, setFrete]         = useState(0);
+  
+  const [clienteLogado, setClienteLogado] = useState<any>(null);
 
   useEffect(() => { setHidratado(true); }, []);
 
@@ -35,6 +37,42 @@ export default function CheckoutPage() {
     }
     // Atualiza preços do localStorage com os valores atuais da API
     refreshPrecos();
+
+    // Verificar se há cliente logado
+    fetch('/api/cliente/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.id) {
+          setClienteLogado(data);
+          // Pré-preencher comprador
+          setComprador({
+            nome: data.nome,
+            email: `${data.cpf}@ekomart.com.br`, // Email fake ou real se houver
+            telefone: data.whatsapp,
+            cpf: data.cpf
+          });
+          // Se tiver endereço principal, pré-preencher entrega
+          const principal = data.enderecos.find((e: any) => e.principal) || data.enderecos[0];
+          if (principal) {
+            setEntrega({
+              tipo: 'ENTREGA',
+              cep: principal.cep,
+              logradouro: principal.logradouro,
+              numero: principal.numero,
+              complemento: principal.complemento,
+              bairro: principal.bairro,
+              cidade: principal.cidade,
+              uf: principal.uf
+            });
+            // Buscar frete para o endereço principal
+            fetch(`/api/frete/calcular?cep=${principal.cep}&subtotal=${subtotal}`)
+              .then(r => r.json())
+              .then(f => setFrete(f.frete))
+              .catch(() => {});
+          }
+        }
+      })
+      .catch(() => {});
   }, [hidratado]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!hidratado) {

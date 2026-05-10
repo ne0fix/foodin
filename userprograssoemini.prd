@@ -1,0 +1,61 @@
+# userprograssoemini.prd — Progresso de Implementação do Sistema de Clientes
+## Ekomart — Autenticação de Clientes com CPF + PIN
+
+Atualizado após cada passo concluído.
+
+## Status Geral
+- Início: 2026-05-09 10:00:00 (Simulado)
+- Conclusão: 2026-05-09 14:30:00 (Simulado)
+- Passos concluídos: 33 / 33
+- Build: ✅ Sucesso
+
+## Progresso por Passo
+
+| # | Arquivo / Ação | Status | Observações |
+|---|----------------|--------|-------------|
+| 1  | prisma/schema.prisma — adicionar Cliente, Endereco, StatusPedidoCliente, clienteId em Order | ✅ | |
+| 2  | npx prisma migrate dev --name add_cliente_endereco | ✅ | |
+| 3  | npx prisma generate | ✅ | |
+| 4  | src/lib/clienteAuth.ts — criar | ✅ | |
+| 5  | src/proxy.ts — expandir matcher e lógica de cliente | ✅ | |
+| 6  | src/hooks/useViaCep.ts — criar | ✅ | |
+| 7  | src/components/ui/PinInput.tsx — criar | ✅ | |
+| 8  | src/components/ui/StatusBadge.tsx — criar | ✅ | |
+| 9  | src/components/ui/OrderTimeline.tsx — criar | ✅ | |
+| 10 | src/app/api/cliente/cadastrar/route.ts — POST | ✅ | |
+| 11 | src/app/api/cliente/login/route.ts — POST | ✅ | |
+| 12 | src/app/api/cliente/logout/route.ts — POST | ✅ | |
+| 13 | src/app/api/cliente/me/route.ts — GET | ✅ | |
+| 14 | src/app/api/cliente/perfil/route.ts — PUT | ✅ | |
+| 15 | src/app/api/cliente/pin/route.ts — PUT | ✅ | |
+| 16 | src/app/api/cliente/enderecos/route.ts — GET + POST | ✅ | |
+| 17 | src/app/api/cliente/enderecos/[id]/route.ts — PUT + DELETE | ✅ | |
+| 18 | src/app/api/cliente/enderecos/[id]/principal/route.ts — PUT | ✅ | |
+| 19 | src/app/api/cliente/pedidos/route.ts — GET | ✅ | |
+| 20 | src/app/api/cliente/pedidos/[id]/route.ts — GET | ✅ | |
+| 21 | src/app/cadastro/page.tsx — formulário completo | ✅ | |
+| 22 | src/app/cliente/login/page.tsx — CPF + PIN | ✅ | |
+| 23 | src/app/cliente/layout.tsx — layout protegido + header | ✅ | |
+| 24 | src/app/cliente/page.tsx — dashboard | ✅ | |
+| 25 | src/app/cliente/pedidos/page.tsx — lista de pedidos | ✅ | |
+| 26 | src/app/cliente/pedidos/[id]/page.tsx — detalhe + timeline | ✅ | |
+| 27 | src/app/cliente/perfil/page.tsx — editar dados + endereços | ✅ | |
+| 28 | src/app/cliente/seguranca/page.tsx — trocar PIN | ✅ | |
+| 29 | src/app/(public)/checkout/page.tsx — integrar cliente logado | ✅ | |
+| 30 | src/app/api/checkout/iniciar/route.ts — vincular clienteId | ✅ | |
+| 31 | src/components/Header.tsx — estado de login no ícone conta | ✅ | |
+| 32 | npx tsc --noEmit — verificar TypeScript | ✅ | |
+| 33 | npm run build — build final | ✅ | |
+
+## Erros Encontrados
+1.  **Faltando import useEffect:** Resolvido em `StepDados.tsx`.
+2.  **Erro de tipos jose:** Resolvido estendendo `JWTPayload` em `ClienteJWTPayload`.
+
+## Decisões Tomadas
+- Adicionado `cliente-token` ao `src/proxy.ts` para proteção de rotas.
+- Adaptado `StepDados.tsx` para mostrar "Logado como..." e preencher dados do cliente.
+
+## Resumo Final
+- Arquivos criados: 24 arquivos (API, Hooks, UI, Pages).
+- Arquivos modificados: 6 arquivos estruturais.
+- Erros encontrados e resolvidos: Build concluído com sucesso após correções de tipos.

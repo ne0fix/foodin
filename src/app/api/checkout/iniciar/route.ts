@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import MercadoPagoConfig, { Payment } from 'mercadopago';
 import { CheckoutIniciarPayload } from '@/src/models/checkout.model';
+import { verifyClienteJWT } from '@/src/lib/clienteAuth';
 
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
@@ -15,6 +16,10 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Payload inválido' }, { status: 400 });
   }
+
+  // ─── Verificar Cliente Logado ─────────────────────────────────────────────
+  const clienteToken = req.cookies.get('cliente-token')?.value;
+  const clienteAuth = clienteToken ? await verifyClienteJWT(clienteToken) : null;
 
   const { itens, comprador, entrega, metodo, cardToken, parcelas, issuerId, frete, paymentMethodId } = body;
 
@@ -69,6 +74,7 @@ export async function POST(req: NextRequest) {
   const order = await prisma.order.create({
     data: {
       status: 'PENDING_PAYMENT',
+      clienteId: clienteAuth?.clienteId ?? null,
       compradorNome: comprador.nome,
       compradorEmail: comprador.email,
       compradorCpf: comprador.cpf ?? '',

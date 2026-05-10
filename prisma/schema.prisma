@@ -118,6 +118,59 @@ enum EntregaTipo {
   RETIRADA
 }
 
+// ─── Enums de Cliente ─────────────────────────────────────────────────────────
+
+enum StatusPedidoCliente {
+  PEDIDO_REALIZADO
+  PAGAMENTO_PROCESSANDO
+  APROVADO
+  EM_SEPARACAO
+  LIBERADO
+  CANCELADO
+}
+
+// ─── Cliente ──────────────────────────────────────────────────────────────────
+
+model Cliente {
+  id           String    @id @default(cuid())
+  nome         String
+  cpf          String    @unique  // apenas dígitos, ex: "01234567890"
+  whatsapp     String             // apenas dígitos, ex: "85999990000"
+  pinHash      String             // bcrypt do PIN de 4 dígitos
+  ativo        Boolean   @default(true)
+  criadoEm    DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+
+  enderecos    Endereco[]
+  pedidos      Order[]    @relation("ClientePedidos")
+
+  @@index([cpf])
+}
+
+// ─── Endereço ─────────────────────────────────────────────────────────────────
+
+model Endereco {
+  id          String   @id @default(cuid())
+  clienteId   String
+  cliente     Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  apelido     String   @default("Casa")  // "Casa", "Trabalho", etc.
+  cep         String
+  logradouro  String
+  numero      String
+  complemento String?
+  referencia  String?
+  bairro      String
+  cidade      String
+  uf          String
+  principal   Boolean  @default(false)
+
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([clienteId])
+}
+
 // ─── Pedido ───────────────────────────────────────────────────────────────────
 
 model Order {
@@ -129,6 +182,13 @@ model Order {
   compradorEmail    String
   compradorCpf      String
   compradorTelefone String
+
+  // Vincular pedido a cliente logado (opcional — mantém compatibilidade com pedidos anônimos)
+  clienteId    String?
+  cliente      Cliente? @relation("ClientePedidos", fields: [clienteId], references: [id])
+
+  // Status visível ao cliente (mapeado do status interno MP)
+  statusCliente StatusPedidoCliente @default(PEDIDO_REALIZADO)
 
   // Entrega
   entregaTipo       EntregaTipo

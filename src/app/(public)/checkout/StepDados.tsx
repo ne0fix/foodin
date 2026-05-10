@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, Store, Loader2 } from 'lucide-react';
 import { DadosComprador, DadosEntrega, FreteResponse } from '@/src/models/checkout.model';
 import { validarCPF, formatarCPF, formatarTelefone } from '@/src/utils/validators';
@@ -60,10 +60,29 @@ export default function StepDados({
   const [cep,         setCep]        = useState(inicialEntrega?.cep         ?? '');
   const [numero,      setNumero]     = useState(inicialEntrega?.numero      ?? '');
   const [complemento, setComplemento] = useState(inicialEntrega?.complemento ?? '');
-  const [dadosCep,    setDadosCep]   = useState<FreteResponse | null>(null);
+  
+  // Se já veio endereço inicial, monta o objeto dadosCep para mostrar o resumo
+  const [dadosCep,    setDadosCep]   = useState<FreteResponse | null>(
+    inicialEntrega?.logradouro ? {
+      logradouro: inicialEntrega.logradouro,
+      bairro:     inicialEntrega.bairro     ?? '',
+      cidade:     inicialEntrega.cidade     ?? '',
+      uf:         inicialEntrega.uf         ?? '',
+      frete:      inicialFrete,
+      freteGratis: inicialFrete === 0
+    } : null
+  );
+
   const [buscando,    setBuscando]   = useState(false);
   const [frete,       setFrete]      = useState(inicialFrete);
   const [erros,       setErros]      = useState<Record<string, string>>({});
+
+  const [logado, setLogado] = useState(false);
+
+  // Verificar se o comprador inicial veio de um cliente logado (identificado por CPF)
+  useEffect(() => {
+    if (inicialComprador?.cpf) setLogado(true);
+  }, [inicialComprador]);
 
   // ── CEP ────────────────────────────────────────────────────────────────────
   const formatCep = (v: string) => {
@@ -136,9 +155,40 @@ export default function StepDados({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
 
+      {/* Identificação de Login */}
+      {logado && (
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+              {nome.charAt(0)}
+            </div>
+            <div>
+              <p className="text-xs text-green-700 font-bold uppercase tracking-wider">Logado como</p>
+              <p className="text-sm font-bold text-green-900">{nome}</p>
+            </div>
+          </div>
+          <button 
+            type="button"
+            onClick={async () => {
+              await fetch('/api/cliente/logout', { method: 'POST' });
+              window.location.reload();
+            }}
+            className="text-xs font-bold text-green-700 hover:underline"
+          >
+            Sair / Trocar
+          </button>
+        </div>
+      )}
+
       {/* Dados pessoais */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
+      <div className={`bg-white rounded-2xl border border-gray-200 p-6 space-y-4 ${logado ? 'opacity-60 grayscale-[0.5]' : ''}`}>
         <h2 className="text-xl font-extrabold text-gray-900">Seus dados</h2>
+        
+        {logado && (
+          <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
+            Seus dados foram preenchidos automaticamente. Para editá-los, acesse seu <strong>Perfil</strong>.
+          </p>
+        )}
 
         <Campo
           label="Nome completo"

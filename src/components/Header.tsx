@@ -13,8 +13,16 @@ export default function Header() {
   const [menuAberto, setMenuAberto] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
 
+  const [clienteNome, setClienteNome] = useState<string | null>(null);
+
   useEffect(() => {
     ProdutoAPI.listarCategorias().then(setCategorias).catch(() => {});
+
+    // Verificar login do cliente (uma vez ao montar)
+    fetch('/api/cliente/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d?.nome ? setClienteNome(d.nome.split(' ')[0]) : null)
+      .catch(() => {});
   }, []);
 
   return (
@@ -79,9 +87,14 @@ export default function Header() {
         {/* Ações */}
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           {/* Conta — visível em todos os tamanhos */}
-          <Link href="/" className="flex flex-col items-center gap-0.5 text-gray-600 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-gray-50 border border-gray-200 sm:border-0">
-            <User size={20} />
-            <span className="hidden lg:block text-[10px] font-medium">Conta</span>
+          <Link 
+            href={clienteNome ? "/cliente" : "/cliente/login"} 
+            className="flex flex-col items-center gap-0.5 text-gray-600 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-gray-50 border border-gray-200 sm:border-0"
+          >
+            <User size={20} className={clienteNome ? "text-green-600" : ""} />
+            <span className="hidden lg:block text-[10px] font-bold">
+              {clienteNome ? `Olá, ${clienteNome}` : "Conta"}
+            </span>
           </Link>
           {/* Favoritos — apenas desktop */}
           <Link href="/" className="hidden sm:flex relative flex-col items-center gap-0.5 text-gray-600 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-gray-50">
@@ -163,8 +176,13 @@ export default function Header() {
               </li>
             </ul>
             <div className="flex gap-3 mt-3 pt-3 border-t border-gray-100">
-              <Link href="/" onClick={() => setMenuAberto(false)} className="flex items-center gap-2 text-sm text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-50 flex-1 justify-center">
-                <User size={18} /> Minha Conta
+              <Link 
+                href={clienteNome ? "/cliente" : "/cliente/login"} 
+                onClick={() => setMenuAberto(false)} 
+                className="flex items-center gap-2 text-sm text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-50 flex-1 justify-center font-bold"
+              >
+                <User size={18} className={clienteNome ? "text-green-600" : ""} /> 
+                {clienteNome ? `Olá, ${clienteNome}` : "Minha Conta"}
               </Link>
               <Link href="/" onClick={() => setMenuAberto(false)} className="flex items-center gap-2 text-sm text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-50 flex-1 justify-center">
                 <Heart size={18} /> Favoritos

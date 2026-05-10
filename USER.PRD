@@ -1,0 +1,1334 @@
+# USER.PRD — Sistema de Autenticação de Clientes
+## Ekomart — Supermercado Online
+### Versão 1.0 | 2026-05-09
+
+> **Destinatário:** Gemini Pro / qualquer LLM implementador
+> **Contexto:** Documento autossuficiente. Leia-o integralmente antes de escrever uma linha de código.
+
+---
+
+## ÍNDICE
+
+1. Visão Geral e Contexto do Projeto
+2. Diagrama de Fluxo
+3. Modelo de Dados
+4. Requisitos Funcionais
+5. Requisitos Não Funcionais
+6. Endpoints da API
+7. Integração ViaCEP
+8. Componentes de UI
+9. Tratamento de Erros
+10. Wireframes Descritivos
+11. Critérios de Aceite
+12. Guia de Implementação (Arquivos a Criar)
+13. Variáveis de Ambiente
+14. Ordem de Execução
+
+---
+
+## 1. VISÃO GERAL E CONTEXTO DO PROJETO
+
+### Stack existente
+- **Framework:** Next.js 16.2.6 com App Router + Turbopack
+- **Linguagem:** TypeScript 6
+- **ORM:** Prisma 5 + PostgreSQL (Neon)
+- **Auth atual (admin):** JWT via `jose`, cookie `admin-token`, bcryptjs
+- **Estilos:** Tailwind CSS 4
+- **Validação:** Zod
+- **Ícones:** lucide-react
+- **Path alias:** `@/*` → `./*` (ex: `@/src/lib/prisma`)
+- **Middleware:** `src/proxy.ts` exporta `proxy` (não `middleware`)
+
+### Convenções obrigatórias
+- Nunca criar `middleware.ts` — o projeto usa `src/proxy.ts` com export `proxy`
+- `params` em Route Handlers é `Promise` no Next.js 16: sempre `await params`
+- Valores `Decimal` do Prisma: sempre `parseFloat(valor.toString())`
+- Cliente Prisma singleton: importar de `@/src/lib/prisma` (já existe)
+- Hash de senha: `@/src/lib/password.ts` já tem `hashPassword()` e `comparePassword()`
+- JWT: `@/src/lib/auth.ts` já tem `signJWT()` e `verifyJWT()`
+- Sem comentários explicando "o quê" — só "por quê" quando não óbvio
+
+### O que este PRD adiciona
+Sistema completo de **clientes** (não admin) com:
+- Login por **CPF + PIN de 4 dígitos** (sem email)
+- Cadastro com endereço via ViaCEP
+- Área do cliente: pedidos, perfil, troca de PIN
+- Checkout pré-preenchido para clientes logados
+
+---
+
+## 2. DIAGRAMA DE FLUXO
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    FLUXO DE CADASTRO                    │
+└─────────────────────────────────────────────────────────┘
+
+[/cadastro]
+  ├─ Usuário preenche: nome, CPF, whatsapp, CEP
+  │       ↓
+  │  [ViaCEP API] ← busca automática ao digitar CEP
+  │       ↓ (logradouro, bairro, cidade, uf preenchidos)
+  │  Usuário preenche: número, complemento?, referência?
+  │       ↓
+  │  Usuário define PIN (4 dígitos) + confirma PIN
+  │       ↓
+  │  POST /api/cliente/cadastrar
+  │       ├─ CPF duplicado? → erro 409
+  │       ├─ CPF inválido? → erro 400
+  │       ├─ PINs diferentes? → erro client-side (antes de enviar)
+  │       └─ Sucesso → cria Cliente + Endereco → redireciona /cliente/login
+  │
+  └─ "Já tenho conta" → /cliente/login
+
+┌─────────────────────────────────────────────────────────┐
+│                     FLUXO DE LOGIN                      │
+└─────────────────────────────────────────────────────────┘
+
+[/cliente/login]
+  ├─ Usuário digita CPF (formatado) + PIN (4 dígitos ocultos)
+  │       ↓
+  │  POST /api/cliente/login
+  │       ├─ CPF não encontrado? → erro genérico "CPF ou PIN inválidos"
+  │       ├─ PIN incorreto? → erro genérico "CPF ou PIN inválidos"
+  │       ├─ Rate limit (5 tentativas / 15 min)? → erro 429
+  │       └─ Sucesso → JWT em cookie `cliente-token` (8h) → redirect /cliente
+  │
+  └─ "Não tenho conta" → /cadastro
+
+┌─────────────────────────────────────────────────────────┐
+│                   ÁREA DO CLIENTE                       │
+└─────────────────────────────────────────────────────────┘
+
+[/cliente] (protegido por middleware)
+  ├─ /cliente               → Dashboard (resumo + últimos pedidos)
+  ├─ /cliente/pedidos       → Lista de todos os pedidos
+  ├─ /cliente/pedidos/[id]  → Detalhe + status do pedido
+  ├─ /cliente/perfil        → Editar dados pessoais + endereços
+  └─ /cliente/seguranca     → Trocar PIN
+
+┌─────────────────────────────────────────────────────────┐
+│                 CHECKOUT COM LOGIN                      │
+└─────────────────────────────────────────────────────────┘
+
+[/checkout]
+  ├─ Logado?
+  │   ├─ SIM → pula Step 2 (dados) — usa dados salvos
+  │   │         Mostra endereço salvo com opção de trocar
+  │   └─ NÃO → exibe Steps normais (método → dados → entrega → pagamento)
+  │
+  └─ Pós-pagamento: Order vincula clienteId (se logado)
+```
+
+---
+
+## 3. MODELO DE DADOS
+
+### 3.1 Adicionar ao `prisma/schema.prisma`
+
+```prisma
+// ─── Enums de Cliente ─────────────────────────────────────────────────────────
+
+enum StatusPedidoCliente {
+  PEDIDO_REALIZADO
+  PAGAMENTO_PROCESSANDO
+  APROVADO
+  EM_SEPARACAO
+  LIBERADO
+  CANCELADO
+}
+
+// ─── Cliente ──────────────────────────────────────────────────────────────────
+
+model Cliente {
+  id           String    @id @default(cuid())
+  nome         String
+  cpf          String    @unique  // apenas dígitos, ex: "01234567890"
+  whatsapp     String             // apenas dígitos, ex: "85999990000"
+  pinHash      String             // bcrypt do PIN de 4 dígitos
+  ativo        Boolean   @default(true)
+  criadoEm    DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+
+  enderecos    Endereco[]
+  pedidos      Order[]    @relation("ClientePedidos")
+
+  @@index([cpf])
+}
+
+// ─── Endereço ─────────────────────────────────────────────────────────────────
+
+model Endereco {
+  id          String   @id @default(cuid())
+  clienteId   String
+  cliente     Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  apelido     String   @default("Casa")  // "Casa", "Trabalho", etc.
+  cep         String
+  logradouro  String
+  numero      String
+  complemento String?
+  referencia  String?
+  bairro      String
+  cidade      String
+  uf          String
+  principal   Boolean  @default(false)
+
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([clienteId])
+}
+```
+
+### 3.2 Modificar model `Order` existente
+
+Adicionar ao model `Order`:
+```prisma
+  // Vincular pedido a cliente logado (opcional — mantém compatibilidade com pedidos anônimos)
+  clienteId    String?
+  cliente      Cliente? @relation("ClientePedidos", fields: [clienteId], references: [id])
+
+  // Status visível ao cliente (mapeado do status interno MP)
+  statusCliente StatusPedidoCliente @default(PEDIDO_REALIZADO)
+```
+
+### 3.3 Mapeamento de status
+
+| `OrderStatus` (interno) | `StatusPedidoCliente` (cliente) |
+|---|---|
+| `PENDING_PAYMENT` | `PEDIDO_REALIZADO` |
+| `PROCESSING` | `PAGAMENTO_PROCESSANDO` |
+| `PAID` | `APROVADO` |
+| `FAILED` | `CANCELADO` |
+| `CANCELLED` | `CANCELADO` |
+| (atualizado manualmente pelo admin) | `EM_SEPARACAO` |
+| (atualizado manualmente pelo admin) | `LIBERADO` |
+
+### 3.4 Migration
+
+```bash
+npx prisma migrate dev --name add_cliente_endereco
+npx prisma generate
+```
+
+---
+
+## 4. REQUISITOS FUNCIONAIS
+
+### RF01 — Cadastro de Cliente
+- Nome completo (mín. 3 chars)
+- CPF: validar algoritmo + unicidade no banco
+- WhatsApp: formato `(DDD) 9XXXX-XXXX` — armazenar só dígitos
+- CEP: 8 dígitos → busca ViaCEP → preenche automaticamente logradouro, bairro, cidade, uf
+- Número: campo manual obrigatório
+- Complemento: opcional
+- Referência: opcional (ex: "Próximo ao mercado X")
+- PIN: 4 dígitos numéricos + confirmação (client-side: os dois devem bater)
+- PIN armazenado com bcrypt (12 salt rounds)
+- Após cadastro: redirecionar para `/cliente/login` com mensagem de sucesso
+
+### RF02 — Login com CPF + PIN
+- Campo CPF com máscara visual `000.000.000-00` (armazenar só dígitos)
+- Campo PIN: 4 inputs individuais (1 dígito cada), foco automático para o próximo
+- Ao submeter: POST `/api/cliente/login`
+- Erro sempre genérico: **"CPF ou PIN inválidos"** (não revelar qual está errado)
+- Rate limit: 5 tentativas por IP a cada 15 minutos
+- Sucesso: cookie `cliente-token` (httpOnly, secure em prod, 8h)
+- Redirecionar para `/cliente` ou para o destino original (query param `?redirect=`)
+
+### RF03 — Dashboard do Cliente
+- Saudação: "Olá, {nome}"
+- Cards: total de pedidos, último pedido + status
+- Lista dos 3 pedidos mais recentes com status visual
+- Links rápidos: "Meus Pedidos", "Editar Perfil", "Trocar PIN"
+
+### RF04 — Lista de Pedidos
+- Paginação: 10 por página
+- Filtro por status (opcional)
+- Colunas: número do pedido (últimos 8 chars do ID), data, total, método de pagamento, status
+- Badge colorido por status:
+  - `PEDIDO_REALIZADO` → cinza
+  - `PAGAMENTO_PROCESSANDO` → amarelo
+  - `APROVADO` → azul
+  - `EM_SEPARACAO` → laranja
+  - `LIBERADO` → verde
+  - `CANCELADO` → vermelho
+- Clique no pedido → `/cliente/pedidos/[id]`
+
+### RF05 — Detalhe do Pedido
+- Número do pedido, data, status atual
+- Timeline visual de progresso (linha do tempo horizontal)
+- Itens: imagem, nome, quantidade, preço unitário, subtotal
+- Resumo: subtotal, frete, total
+- Endereço de entrega ou "Retirada em loja"
+- Método de pagamento
+- Para PIX: se status `PEDIDO_REALIZADO`, mostrar QR Code e código copia-e-cola
+
+### RF06 — Editar Perfil
+- Campos editáveis: nome, whatsapp
+- CPF não editável (exibido como texto)
+- Endereços: listar todos, marcar um como principal, editar, adicionar novo
+- Edição de endereço: permite buscar novo CEP (re-carrega ViaCEP), editar número/complemento/referência
+- Ao salvar: feedback de sucesso
+
+### RF07 — Trocar PIN
+- Solicitar: PIN atual (validado via bcrypt no backend)
+- Novo PIN: 4 dígitos + confirmação
+- Novo PIN ≠ PIN atual obrigatório
+- Se PIN atual incorreto: erro "PIN atual incorreto"
+- Máx. 3 tentativas antes de bloquear por 30 minutos (por clienteId)
+
+### RF08 — Checkout com Cliente Logado
+- Detectar se há cookie `cliente-token` válido
+- Se logado e tiver endereço: pular step de dados, mostrar endereço principal
+- Opção "Usar outro endereço" → dropdown com endereços salvos ou adicionar novo
+- Ao concluir pedido: salvar `clienteId` no Order
+- Exibir aviso discreto: "Logado como {nome} · [Sair]"
+
+### RF09 — Logout
+- `POST /api/cliente/logout` → apaga cookie `cliente-token`
+- Redireciona para `/`
+- Disponível em toda a área do cliente (header fixo)
+
+---
+
+## 5. REQUISITOS NÃO FUNCIONAIS
+
+- **Segurança:** PIN nunca retornado em nenhuma resposta. Erro genérico em login. bcrypt round 12.
+- **Performance:** JWT verificado no middleware (Edge Runtime) sem chamada ao banco.
+- **Sessão:** Cookie `cliente-token` httpOnly, secure em produção, sameSite strict, 8h de expiração.
+- **Middleware Edge:** `jwtVerify` com `jose` — compatível com Edge Runtime do Next.js.
+- **Responsive:** Toda área do cliente mobile-first com Tailwind CSS 4.
+- **Acessibilidade:** Labels nos inputs, foco gerenciado nos 4 inputs do PIN.
+- **Rate Limiting:** Reutilizar `@/src/lib/rateLimit.ts` existente.
+
+---
+
+## 6. ENDPOINTS DA API
+
+### Base path: `/api/cliente`
+
+---
+
+#### `POST /api/cliente/cadastrar`
+
+Cria novo cliente com endereço.
+
+**Request body:**
+```json
+{
+  "nome": "Maria Silva",
+  "cpf": "01234567890",
+  "whatsapp": "85999990000",
+  "pin": "1234",
+  "pinConfirmacao": "1234",
+  "endereco": {
+    "cep": "60175047",
+    "logradouro": "Avenida Santos Dumont",
+    "numero": "1500",
+    "complemento": "Apto 302",
+    "referencia": "Próximo ao Shopping",
+    "bairro": "Papicu",
+    "cidade": "Fortaleza",
+    "uf": "CE"
+  }
+}
+```
+
+**Validações (Zod):**
+```typescript
+const CadastroSchema = z.object({
+  nome:           z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
+  cpf:            z.string().regex(/^\d{11}$/, 'CPF deve ter 11 dígitos'),
+  whatsapp:       z.string().regex(/^\d{10,11}$/, 'WhatsApp inválido'),
+  pin:            z.string().regex(/^\d{4}$/, 'PIN deve ter 4 dígitos'),
+  pinConfirmacao: z.string().regex(/^\d{4}$/, 'PIN de confirmação deve ter 4 dígitos'),
+  endereco: z.object({
+    cep:        z.string().regex(/^\d{8}$/, 'CEP inválido'),
+    logradouro: z.string().min(1),
+    numero:     z.string().min(1, 'Número obrigatório'),
+    complemento:z.string().optional(),
+    referencia: z.string().optional(),
+    bairro:     z.string().min(1),
+    cidade:     z.string().min(1),
+    uf:         z.string().length(2),
+  }),
+}).refine(d => d.pin === d.pinConfirmacao, {
+  message: 'PINs não coincidem',
+  path: ['pinConfirmacao'],
+});
+```
+
+**Lógica do handler:**
+1. Validar CPF com algoritmo (usar função `validarCPF` de `@/src/utils/validators.ts`)
+2. Checar unicidade: `prisma.cliente.findUnique({ where: { cpf } })`
+3. Hash do PIN: `hashPassword(pin)` de `@/src/lib/password.ts`
+4. Criar `Cliente` + `Endereco` (principal: true) em transação
+
+**Responses:**
+```json
+// 201 Created
+{ "message": "Cadastro realizado com sucesso", "clienteId": "cm..." }
+
+// 400 Bad Request
+{ "error": "CPF inválido" }
+
+// 409 Conflict
+{ "error": "CPF já cadastrado" }
+```
+
+---
+
+#### `POST /api/cliente/login`
+
+Autentica cliente com CPF + PIN.
+
+**Request body:**
+```json
+{ "cpf": "01234567890", "pin": "1234" }
+```
+
+**Lógica do handler:**
+1. Rate limit por IP
+2. Buscar `prisma.cliente.findUnique({ where: { cpf, ativo: true } })`
+3. `comparePassword(pin, cliente.pinHash)` — mesmo tempo de resposta se não encontrado
+4. Gerar JWT: `signJWT({ clienteId: cliente.id, cpf: cliente.cpf })` com expiração 8h
+5. Definir cookie `cliente-token` (httpOnly, secure prod, sameSite strict, maxAge 28800)
+
+**Responses:**
+```json
+// 200 OK
+{
+  "cliente": { "id": "cm...", "nome": "Maria Silva", "cpf": "01234567890" }
+}
+
+// 401 Unauthorized
+{ "error": "CPF ou PIN inválidos" }
+
+// 429 Too Many Requests
+{ "error": "Muitas tentativas. Tente novamente em 15 minutos." }
+```
+
+---
+
+#### `POST /api/cliente/logout`
+
+```json
+// 200 OK — apaga cookie cliente-token
+{ "ok": true }
+```
+
+---
+
+#### `GET /api/cliente/me`
+
+Retorna perfil completo do cliente logado.
+
+**Auth:** Header `X-Cliente-Id` (injetado pelo middleware).
+
+**Response 200:**
+```json
+{
+  "id": "cm...",
+  "nome": "Maria Silva",
+  "cpf": "01234567890",
+  "whatsapp": "85999990000",
+  "criadoEm": "2026-05-09T00:00:00Z",
+  "enderecos": [
+    {
+      "id": "cm...",
+      "apelido": "Casa",
+      "cep": "60175047",
+      "logradouro": "Av. Santos Dumont",
+      "numero": "1500",
+      "complemento": "Apto 302",
+      "referencia": "Próximo ao Shopping",
+      "bairro": "Papicu",
+      "cidade": "Fortaleza",
+      "uf": "CE",
+      "principal": true
+    }
+  ]
+}
+```
+
+---
+
+#### `PUT /api/cliente/perfil`
+
+Atualiza nome e/ou whatsapp.
+
+**Request body:**
+```json
+{ "nome": "Maria Oliveira", "whatsapp": "85988880000" }
+```
+
+**Response 200:**
+```json
+{ "message": "Perfil atualizado com sucesso" }
+```
+
+---
+
+#### `PUT /api/cliente/pin`
+
+Troca o PIN do cliente.
+
+**Request body:**
+```json
+{ "pinAtual": "1234", "pinNovo": "5678", "pinNovoConfirmacao": "5678" }
+```
+
+**Lógica:**
+1. Verificar `pinAtual` com bcrypt
+2. Verificar `pinNovo === pinNovoConfirmacao`
+3. Verificar `pinNovo !== pinAtual`
+4. Atualizar hash
+
+**Responses:**
+```json
+// 200 OK
+{ "message": "PIN atualizado com sucesso" }
+
+// 400 Bad Request
+{ "error": "PIN atual incorreto" }
+{ "error": "Novo PIN deve ser diferente do atual" }
+{ "error": "PINs não coincidem" }
+```
+
+---
+
+#### `GET /api/cliente/enderecos`
+
+Lista todos os endereços do cliente.
+
+**Response 200:**
+```json
+{ "enderecos": [ /* array de Endereco */ ] }
+```
+
+---
+
+#### `POST /api/cliente/enderecos`
+
+Adiciona novo endereço.
+
+**Request body:** mesmo schema de endereço do cadastro + `apelido`.
+
+**Response 201:**
+```json
+{ "endereco": { /* Endereco criado */ } }
+```
+
+---
+
+#### `PUT /api/cliente/enderecos/[id]`
+
+Edita endereço existente.
+
+**Auth:** verificar que `endereco.clienteId === clienteId` do token.
+
+**Request body:** campos opcionais do endereço.
+
+**Response 200:**
+```json
+{ "message": "Endereço atualizado" }
+```
+
+---
+
+#### `DELETE /api/cliente/enderecos/[id]`
+
+Remove endereço (não pode remover o único endereço do cliente).
+
+**Response 200:**
+```json
+{ "message": "Endereço removido" }
+```
+
+---
+
+#### `PUT /api/cliente/enderecos/[id]/principal`
+
+Define endereço como principal (desmarca os demais).
+
+**Response 200:**
+```json
+{ "message": "Endereço principal atualizado" }
+```
+
+---
+
+#### `GET /api/cliente/pedidos`
+
+Lista pedidos do cliente logado.
+
+**Query params:** `?page=1&status=APROVADO`
+
+**Response 200:**
+```json
+{
+  "pedidos": [
+    {
+      "id": "cm...",
+      "numero": "CM...XYZ",
+      "total": 32.99,
+      "metodoPagamento": "PIX",
+      "statusCliente": "APROVADO",
+      "criadoEm": "2026-05-09T00:00:00Z",
+      "itens": 3
+    }
+  ],
+  "total": 12,
+  "page": 1,
+  "pages": 2
+}
+```
+
+---
+
+#### `GET /api/cliente/pedidos/[id]`
+
+Detalhe de um pedido específico.
+
+**Auth:** verificar `order.clienteId === clienteId` do token.
+
+**Response 200:**
+```json
+{
+  "id": "cm...",
+  "statusCliente": "EM_SEPARACAO",
+  "total": 32.99,
+  "subtotal": 12.99,
+  "frete": 20.00,
+  "metodoPagamento": "PIX",
+  "entregaTipo": "ENTREGA",
+  "endereco": { "logradouro": "...", "numero": "...", "bairro": "...", "cidade": "...", "uf": "..." },
+  "mpQrCode": null,
+  "mpQrCodeBase64": null,
+  "criadoEm": "2026-05-09T00:00:00Z",
+  "pagoEm": "2026-05-09T01:00:00Z",
+  "items": [
+    {
+      "nomeProduto": "Arroz 5kg",
+      "imagemProduto": "https://...",
+      "quantidade": 2,
+      "preco": 24.90,
+      "subtotal": 49.80
+    }
+  ]
+}
+```
+
+---
+
+## 7. INTEGRAÇÃO VIACEP
+
+### Como usar no frontend
+
+```typescript
+// src/hooks/useViaCep.ts
+import { useState } from 'react';
+
+interface ViaCepResponse {
+  logradouro: string;
+  bairro: string;
+  localidade: string;  // cidade
+  uf: string;
+  erro?: boolean;
+}
+
+export function useViaCep() {
+  const [buscando, setBuscando] = useState(false);
+  const [erroCep, setErroCep] = useState('');
+
+  const buscar = async (cep: string): Promise<ViaCepResponse | null> => {
+    const limpo = cep.replace(/\D/g, '');
+    if (limpo.length !== 8) return null;
+
+    setBuscando(true);
+    setErroCep('');
+
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
+      const data: ViaCepResponse = await res.json();
+
+      if (data.erro) {
+        setErroCep('CEP não encontrado. Verifique e tente novamente.');
+        return null;
+      }
+      return data;
+    } catch {
+      setErroCep('Erro ao buscar CEP. Verifique sua conexão.');
+      return null;
+    } finally {
+      setBuscando(false);
+    }
+  };
+
+  return { buscar, buscando, erroCep, setErroCep };
+}
+```
+
+### Uso no formulário de cadastro
+
+```typescript
+// Ao digitar o CEP (após 8 dígitos):
+const cepFormatado = (v: string) => {
+  const d = v.replace(/\D/g, '').slice(0, 8);
+  return d.length > 5 ? d.replace(/(\d{5})(\d)/, '$1-$2') : d;
+};
+
+onChange={e => {
+  const v = cepFormatado(e.target.value);
+  setCep(v);
+  if (v.replace(/\D/g, '').length === 8) {
+    buscar(v).then(dados => {
+      if (dados) {
+        setLogradouro(dados.logradouro);
+        setBairro(dados.bairro);
+        setCidade(dados.localidade);
+        setUf(dados.uf);
+        // Mover foco para o campo "número"
+        numeroRef.current?.focus();
+      }
+    });
+  }
+}}
+```
+
+---
+
+## 8. COMPONENTES DE UI
+
+### 8.1 PinInput — 4 inputs individuais
+
+```typescript
+// src/components/ui/PinInput.tsx
+'use client';
+import { useRef, KeyboardEvent } from 'react';
+
+interface Props {
+  value: string;
+  onChange: (v: string) => void;
+  label?: string;
+  erro?: string;
+}
+
+export function PinInput({ value, onChange, label, erro }: Props) {
+  const refs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null),
+                useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+  const digits = value.padEnd(4, '').split('').slice(0, 4);
+
+  const handleChange = (i: number, v: string) => {
+    if (!/^\d?$/.test(v)) return;
+    const novo = digits.map((d, j) => j === i ? v : d).join('').replace(/\s/g, '');
+    onChange(novo);
+    if (v && i < 3) refs[i + 1].current?.focus();
+  };
+
+  const handleKeyDown = (i: number, e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !digits[i] && i > 0) refs[i - 1].current?.focus();
+  };
+
+  return (
+    <div>
+      {label && <label className="block text-sm font-bold text-gray-700 mb-2">{label}</label>}
+      <div className="flex gap-3">
+        {[0, 1, 2, 3].map(i => (
+          <input
+            key={i}
+            ref={refs[i]}
+            type="password"
+            inputMode="numeric"
+            maxLength={1}
+            value={digits[i] === ' ' ? '' : digits[i]}
+            onChange={e => handleChange(i, e.target.value)}
+            onKeyDown={e => handleKeyDown(i, e)}
+            className={`w-12 h-12 text-center text-xl font-bold border-2 rounded-xl outline-none
+              transition-colors ${erro ? 'border-red-400' : 'border-gray-300 focus:border-green-500'}`}
+          />
+        ))}
+      </div>
+      {erro && <p className="text-xs text-red-500 mt-1">{erro}</p>}
+    </div>
+  );
+}
+```
+
+### 8.2 CpfInput — máscara CPF
+
+```typescript
+// Dentro do formulário — usar formatarCPF de @/src/utils/validators.ts
+// Armazenar state sem máscara, exibir com máscara
+
+const [cpf, setCpf] = useState('');
+
+<input
+  value={cpf}
+  onChange={e => setCpf(formatarCPF(e.target.value))}
+  placeholder="000.000.000-00"
+  maxLength={14}
+  inputMode="numeric"
+/>
+
+// Ao enviar: cpf.replace(/\D/g, '') — envia só dígitos
+```
+
+### 8.3 StatusBadge — badge de status de pedido
+
+```typescript
+// src/components/ui/StatusBadge.tsx
+const STATUS_MAP: Record<string, { label: string; cor: string }> = {
+  PEDIDO_REALIZADO:      { label: 'Pedido realizado',       cor: 'bg-gray-100 text-gray-700' },
+  PAGAMENTO_PROCESSANDO: { label: 'Pagamento em processo',  cor: 'bg-yellow-100 text-yellow-700' },
+  APROVADO:              { label: 'Aprovado',               cor: 'bg-blue-100 text-blue-700' },
+  EM_SEPARACAO:          { label: 'Em separação',           cor: 'bg-orange-100 text-orange-700' },
+  LIBERADO:              { label: 'Liberado para entrega',  cor: 'bg-green-100 text-green-700' },
+  CANCELADO:             { label: 'Cancelado',              cor: 'bg-red-100 text-red-700' },
+};
+
+export function StatusBadge({ status }: { status: string }) {
+  const config = STATUS_MAP[status] ?? { label: status, cor: 'bg-gray-100 text-gray-600' };
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${config.cor}`}>
+      {config.label}
+    </span>
+  );
+}
+```
+
+### 8.4 Timeline de Status do Pedido
+
+```typescript
+// src/components/ui/OrderTimeline.tsx
+const ETAPAS = [
+  'PEDIDO_REALIZADO', 'PAGAMENTO_PROCESSANDO', 'APROVADO', 'EM_SEPARACAO', 'LIBERADO'
+];
+
+export function OrderTimeline({ statusAtual }: { statusAtual: string }) {
+  const idx = ETAPAS.indexOf(statusAtual);
+  return (
+    <div className="flex items-center gap-0 overflow-x-auto">
+      {ETAPAS.map((etapa, i) => {
+        const concluido = i <= idx;
+        const atual = i === idx;
+        return (
+          <div key={etapa} className="flex items-center flex-shrink-0">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2
+              ${concluido ? 'bg-green-600 border-green-600 text-white' : 'border-gray-300 text-gray-400'}`}>
+              {concluido ? '✓' : i + 1}
+            </div>
+            {i < ETAPAS.length - 1 && (
+              <div className={`h-1 w-12 sm:w-20 ${i < idx ? 'bg-green-600' : 'bg-gray-200'}`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+```
+
+---
+
+## 9. TRATAMENTO DE ERROS
+
+| Cenário | Onde detectar | Mensagem ao usuário |
+|---|---|---|
+| CPF com formato inválido | Client-side (Zod + validarCPF) | "CPF inválido" |
+| CPF já cadastrado | POST /cadastrar (409) | "CPF já cadastrado. Faça login." |
+| PINs diferentes no cadastro | Client-side (antes de submeter) | "Os PINs não coincidem" |
+| PIN com menos de 4 dígitos | Client-side | "PIN deve ter 4 dígitos" |
+| CPF ou PIN incorretos no login | POST /login (401) | "CPF ou PIN inválidos" |
+| Rate limit de login | POST /login (429) | "Muitas tentativas. Tente em 15 min." |
+| CEP não encontrado | useViaCep hook | "CEP não encontrado. Verifique." |
+| CEP com formato inválido | Client-side | "CEP deve ter 8 dígitos" |
+| Sessão expirada | GET /me (401) | Redirect para /cliente/login |
+| PIN atual incorreto (troca) | PUT /pin (400) | "PIN atual incorreto" |
+| Novo PIN igual ao atual | Server-side | "Novo PIN deve ser diferente do atual" |
+| Token inválido/expirado | Middleware | Redirect para /cliente/login |
+| Endereço inexistente | GET 404 | "Endereço não encontrado" |
+| Tentativa de acessar pedido de outro cliente | GET 403 | "Acesso negado" |
+
+---
+
+## 10. WIREFRAMES DESCRITIVOS
+
+### Tela de Cadastro `/cadastro`
+
+```
+┌────────────────────────────────────────┐
+│  ← Voltar           CADASTRO           │
+│                                        │
+│  [Logo centralizado]                   │
+│                                        │
+│  SEUS DADOS                           │
+│  ┌──────────────────────────────────┐  │
+│  │ Nome completo *                  │  │
+│  │ [________________________]       │  │
+│  └──────────────────────────────────┘  │
+│  ┌──────────────────────────────────┐  │
+│  │ CPF *              WhatsApp *    │  │
+│  │ [000.000.000-00] [85999990000]   │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  ENDEREÇO                             │
+│  ┌──────────────────────────────────┐  │
+│  │ CEP * [00000-000] 🔍 buscando... │  │
+│  │ Logradouro [preenchido auto]     │  │
+│  │ Número *  | Complemento          │  │
+│  │ [____]    | [__________]         │  │
+│  │ Bairro [preenchido auto]         │  │
+│  │ Cidade / UF [auto] / [auto]      │  │
+│  │ Referência (opcional)            │  │
+│  │ [________________________]       │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  CRIE SEU PIN DE ACESSO               │
+│  PIN (4 dígitos) *                    │
+│  [•] [•] [•] [•]                      │
+│  Confirme o PIN *                     │
+│  [•] [•] [•] [•]                      │
+│                                        │
+│  [  CRIAR MINHA CONTA  ] (btn verde)  │
+│                                        │
+│  Já tenho conta? Fazer login           │
+└────────────────────────────────────────┘
+```
+
+### Tela de Login `/cliente/login`
+
+```
+┌────────────────────────────────────────┐
+│                                        │
+│  [Logo centralizado]                   │
+│  Bem-vindo de volta!                   │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │ CPF *                            │  │
+│  │ [000.000.000-00]                 │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  Seu PIN de 4 dígitos *               │
+│  [•] [•] [•] [•]                      │
+│                                        │
+│  [   ENTRAR   ] (btn verde)           │
+│                                        │
+│  Não tem conta? Cadastre-se           │
+└────────────────────────────────────────┘
+```
+
+### Dashboard `/cliente`
+
+```
+┌────────────────────────────────────────┐
+│ [Logo]  Olá, Maria! 👋       [Sair]   │
+│─────────────────────────────────────── │
+│ ┌──────────┐ ┌──────────┐ ┌─────────┐ │
+│ │ 5 pedidos│ │ R$ 247   │ │Logado✓  │ │
+│ │  totais  │ │  em comp.│ │         │ │
+│ └──────────┘ └──────────┘ └─────────┘ │
+│                                        │
+│ ÚLTIMOS PEDIDOS                       │
+│ ┌────────────────────────────────────┐ │
+│ │ #CM...XYZ  09/05  R$32,99  [PIX]  │ │
+│ │ ● Em separação                     │ │
+│ ├────────────────────────────────────┤ │
+│ │ #CM...ABC  08/05  R$18,50  [PIX]  │ │
+│ │ ● Liberado                         │ │
+│ └────────────────────────────────────┘ │
+│                                        │
+│ [Meus Pedidos] [Editar Perfil] [PIN]  │
+└────────────────────────────────────────┘
+```
+
+### Detalhe do Pedido `/cliente/pedidos/[id]`
+
+```
+┌────────────────────────────────────────┐
+│ ← Pedido #CM...XYZ                    │
+│ 09/05/2026 às 14:30                   │
+│                                        │
+│ PROGRESSO                             │
+│ ●────●────●────○────○                 │
+│ Pedi Pgto  Apr  Sep  Lib              │
+│                                        │
+│ ITENS                                 │
+│ ┌────────────────────────────────────┐ │
+│ │ [img] Arroz 5kg          × 1      │ │
+│ │       R$ 24,90                    │ │
+│ ├────────────────────────────────────┤ │
+│ │ [img] Feijão 1kg         × 2      │ │
+│ │       R$ 8,90 = R$ 17,80         │ │
+│ └────────────────────────────────────┘ │
+│                                        │
+│ Subtotal: R$ 42,70                    │
+│ Frete:    R$ 20,00                    │
+│ Total:    R$ 62,70                    │
+│                                        │
+│ Pagamento: PIX ✓ Aprovado             │
+│ Entrega: Av. Santos Dumont, 1500...   │
+└────────────────────────────────────────┘
+```
+
+---
+
+## 11. CRITÉRIOS DE ACEITE
+
+### CA01 — Cadastro
+- [x] CPF com 11 dígitos passa pelo algoritmo de validação
+- [x] CPF duplicado retorna erro 409 com mensagem clara
+- [x] ViaCEP preenche os campos automaticamente em < 1s
+- [x] Campos logradouro, bairro, cidade, uf não são editáveis após preenchimento (apenas readonly, mas número/complemento/referência são livres)
+- [x] PIN de confirmação diferente bloqueia o envio (validação client-side)
+- [x] Após cadastro bem-sucedido, redireciona para `/cliente/login?sucesso=1`
+- [x] Página `/cliente/login` exibe toast de sucesso quando `?sucesso=1`
+
+### CA02 — Login
+- [x] Login com CPF + PIN corretos define cookie `cliente-token` e redireciona para `/cliente`
+- [x] 3 tentativas erradas em sequência exibem aviso antes do bloqueio
+- [x] 5 tentativas ativa rate limit de 15 min
+- [x] Erro nunca informa qual campo está errado
+- [x] Foco automático no campo PIN após digitar o CPF completo
+
+### CA03 — Middleware de proteção
+- [x] Acessar `/cliente` sem login redireciona para `/cliente/login?redirect=/cliente`
+- [x] Após login, redireciona para o `?redirect=` original
+- [x] Cookie expirado redireciona para login
+
+### CA04 — Dashboard
+- [x] Exibe nome do cliente
+- [x] Exibe quantidade de pedidos
+- [x] Lista os 3 pedidos mais recentes com status em badge colorido
+
+### CA05 — Pedidos
+- [x] Pedidos são listados somente os do cliente logado
+- [x] Pedido de outro cliente retorna 403
+- [x] Timeline mostra progresso correto baseado em `statusCliente`
+- [x] PIX pendente exibe QR Code
+
+### CA06 — Perfil
+- [x] Nome e WhatsApp atualizados com sucesso exibem feedback
+- [x] CPF não é editável
+- [x] Endereço editado persiste no banco
+
+### CA07 — Troca de PIN
+- [x] PIN atual incorreto → erro sem bloquear o usuário ainda
+- [x] 3 tentativas erradas → bloqueio de 30 min
+- [x] Novo PIN igual ao atual → erro antes de salvar
+- [x] Sucesso → toast de confirmação + redirect para `/cliente`
+
+### CA08 — Checkout integrado
+- [x] Cliente logado não precisa preencher dados pessoais
+- [x] Endereço principal do cliente é pré-selecionado
+- [x] Pedido finalizado tem `clienteId` vinculado
+- [x] Cliente não logado segue fluxo anônimo normalmente
+
+---
+
+## 12. GUIA DE IMPLEMENTAÇÃO — ARQUIVOS A CRIAR
+
+### Passo 0 — Preparação (não escrever código ainda)
+```bash
+# 1. Atualizar schema.prisma (seção 3.1 + 3.2)
+# 2. Rodar migration
+npx prisma migrate dev --name add_cliente_endereco
+npx prisma generate
+```
+
+### Passo 1 — Biblioteca de autenticação do cliente
+
+**Criar `src/lib/clienteAuth.ts`:**
+```typescript
+import { SignJWT, jwtVerify } from 'jose';
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? '');
+
+export interface ClienteJWTPayload {
+  clienteId: string;
+  cpf: string;
+}
+
+export async function signClienteJWT(payload: ClienteJWTPayload): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('8h')
+    .setIssuedAt()
+    .sign(secret);
+}
+
+export async function verifyClienteJWT(token: string): Promise<ClienteJWTPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, secret);
+    return payload as ClienteJWTPayload;
+  } catch {
+    return null;
+  }
+}
+
+export async function getClienteFromRequest(req: Request): Promise<ClienteJWTPayload | null> {
+  const cookies = req.headers.get('cookie') ?? '';
+  const token = cookies.split(';')
+    .find(c => c.trim().startsWith('cliente-token='))
+    ?.split('=')[1]?.trim();
+  if (!token) return null;
+  return verifyClienteJWT(token);
+}
+
+// Helper para uso em Route Handlers do Next.js (NextRequest)
+import type { NextRequest } from 'next/server';
+export async function getClienteFromNextRequest(req: NextRequest): Promise<ClienteJWTPayload | null> {
+  const token = req.cookies.get('cliente-token')?.value;
+  if (!token) return null;
+  return verifyClienteJWT(token);
+}
+```
+
+### Passo 2 — Atualizar `src/proxy.ts`
+
+Adicionar proteção para rotas `/cliente/**` (exceto login, cadastro):
+
+```typescript
+// Adicionar ao proxy.ts existente — NÃO substituir, apenas expandir
+const CLIENTE_TOKEN_PATHS = ['/cliente', '/api/cliente/me', '/api/cliente/pedidos',
+  '/api/cliente/perfil', '/api/cliente/pin', '/api/cliente/enderecos', '/api/cliente/logout'];
+const CLIENTE_PUBLIC_PATHS = ['/cliente/login', '/cadastro',
+  '/api/cliente/login', '/api/cliente/cadastrar'];
+
+// Verificar se é rota de cliente protegida e validar cliente-token
+```
+
+**IMPORTANTE:** O proxy existente já exporta `proxy` e tem `matcher`. Expandir o matcher:
+```typescript
+export const config = {
+  matcher: [
+    '/admin/:path*',
+    '/api/admin/:path*',
+    '/cliente/:path*',          // ← adicionar
+    '/api/cliente/:path*',      // ← adicionar
+    '/cadastro',                // ← adicionar
+  ],
+};
+```
+
+### Passo 3 — Endpoints da API
+
+Criar os seguintes arquivos (todos Route Handlers do App Router):
+
+```
+src/app/api/cliente/
+  cadastrar/route.ts          POST — criar cliente + endereço
+  login/route.ts              POST — autenticar com CPF + PIN
+  logout/route.ts             POST — apagar cookie
+  me/route.ts                 GET  — perfil completo
+  perfil/route.ts             PUT  — atualizar nome/whatsapp
+  pin/route.ts                PUT  — trocar PIN
+  enderecos/
+    route.ts                  GET (listar) + POST (criar)
+    [id]/
+      route.ts                PUT (editar) + DELETE (remover)
+      principal/route.ts      PUT — definir como principal
+  pedidos/
+    route.ts                  GET — listar pedidos do cliente
+    [id]/route.ts             GET — detalhe do pedido
+```
+
+**Estrutura padrão de Route Handler protegido:**
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { getClienteFromNextRequest } from '@/src/lib/clienteAuth';
+import { prisma } from '@/src/lib/prisma';
+
+export async function GET(req: NextRequest) {
+  const cliente = await getClienteFromNextRequest(req);
+  if (!cliente) {
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+  }
+
+  // ... lógica
+}
+```
+
+### Passo 4 — Hook ViaCEP
+
+**Criar `src/hooks/useViaCep.ts`** (código completo na seção 7).
+
+### Passo 5 — Componentes de UI
+
+```
+src/components/ui/
+  PinInput.tsx                4 inputs individuais (seção 8.1)
+  StatusBadge.tsx             badge colorido por status (seção 8.3)
+  OrderTimeline.tsx           timeline de progresso (seção 8.4)
+
+src/components/cliente/
+  ClienteHeader.tsx           header da área do cliente (nome + logout)
+  PedidoCard.tsx              card resumido de pedido na lista
+  EnderecoCard.tsx            card de endereço com opções editar/principal
+  FormEndereco.tsx            formulário de endereço (com ViaCEP)
+```
+
+### Passo 6 — Páginas
+
+```
+src/app/
+  cadastro/
+    page.tsx                  Formulário de cadastro completo
+
+  cliente/
+    login/
+      page.tsx                Login CPF + PIN
+
+    layout.tsx                Layout com header do cliente + verificação auth
+    page.tsx                  Dashboard
+
+    pedidos/
+      page.tsx                Lista de pedidos
+      [id]/
+        page.tsx              Detalhe + timeline do pedido
+
+    perfil/
+      page.tsx                Editar dados pessoais + endereços
+
+    seguranca/
+      page.tsx                Trocar PIN
+```
+
+### Passo 7 — Integração no Checkout
+
+Modificar `src/app/(public)/checkout/page.tsx`:
+
+```typescript
+// Verificar se há cliente logado
+const [clienteLogado, setClienteLogado] = useState<ClienteData | null>(null);
+
+useEffect(() => {
+  fetch('/api/cliente/me')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (data?.id) setClienteLogado(data);
+    })
+    .catch(() => {});
+}, []);
+
+// Se logado, pular step 2 (dados) e pré-preencher com dados do cliente
+```
+
+Modificar `src/app/api/checkout/iniciar/route.ts`:
+```typescript
+// Extrair clienteId do cookie se presente
+const clienteToken = req.cookies.get('cliente-token')?.value;
+const clienteAuth = clienteToken ? await verifyClienteJWT(clienteToken) : null;
+
+// Ao criar o Order, incluir clienteId se logado
+await prisma.order.create({
+  data: {
+    // ...
+    clienteId: clienteAuth?.clienteId ?? null,
+  }
+});
+```
+
+### Passo 8 — Atualizar Header público
+
+Em `src/components/Header.tsx`, fazer o ícone de Conta verificar se está logado:
+
+```typescript
+// Verificar login do cliente (uma vez ao montar)
+const [clienteNome, setClienteNome] = useState<string | null>(null);
+
+useEffect(() => {
+  fetch('/api/cliente/me')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => d?.nome ? setClienteNome(d.nome.split(' ')[0]) : null)
+    .catch(() => {});
+}, []);
+
+// Ícone de conta muda conforme estado:
+// Não logado → href="/cliente/login" | ícone User
+// Logado → href="/cliente" | ícone User + "Olá, {nome}"
+```
+
+---
+
+## 13. VARIÁVEIS DE AMBIENTE
+
+Não há novas variáveis necessárias. O sistema usa:
+
+```bash
+# Já existentes — não alterar
+DATABASE_URL=...          # Neon PostgreSQL
+JWT_SECRET=...            # Mesma secret para admin e cliente
+```
+
+O `JWT_SECRET` é compartilhado entre admin e cliente. Os tokens são diferenciados pelo payload:
+- Admin: `{ adminId, email }`
+- Cliente: `{ clienteId, cpf }`
+
+O middleware distingue pelas rotas protegidas, não pelo conteúdo do token.
+
+---
+
+## 14. ORDEM DE EXECUÇÃO
+
+```
+1.  Atualizar prisma/schema.prisma (adicionar Cliente, Endereco, StatusPedidoCliente, clienteId em Order)
+2.  npx prisma migrate dev --name add_cliente_endereco
+3.  npx prisma generate
+4.  Criar src/lib/clienteAuth.ts
+5.  Atualizar src/proxy.ts (expandir matcher + lógica de cliente)
+6.  Criar src/hooks/useViaCep.ts
+7.  Criar src/components/ui/PinInput.tsx
+8.  Criar src/components/ui/StatusBadge.tsx
+9.  Criar src/components/ui/OrderTimeline.tsx
+10. Criar src/app/api/cliente/cadastrar/route.ts
+11. Criar src/app/api/cliente/login/route.ts
+12. Criar src/app/api/cliente/logout/route.ts
+13. Criar src/app/api/cliente/me/route.ts
+14. Criar src/app/api/cliente/perfil/route.ts
+15. Criar src/app/api/cliente/pin/route.ts
+16. Criar src/app/api/cliente/enderecos/route.ts (GET + POST)
+17. Criar src/app/api/cliente/enderecos/[id]/route.ts (PUT + DELETE)
+18. Criar src/app/api/cliente/enderecos/[id]/principal/route.ts (PUT)
+19. Criar src/app/api/cliente/pedidos/route.ts (GET)
+20. Criar src/app/api/cliente/pedidos/[id]/route.ts (GET)
+21. Criar src/app/cadastro/page.tsx
+22. Criar src/app/cliente/login/page.tsx
+23. Criar src/app/cliente/layout.tsx (protegido + header)
+24. Criar src/app/cliente/page.tsx (dashboard)
+25. Criar src/app/cliente/pedidos/page.tsx
+26. Criar src/app/cliente/pedidos/[id]/page.tsx
+27. Criar src/app/cliente/perfil/page.tsx
+28. Criar src/app/cliente/seguranca/page.tsx
+29. Atualizar src/app/(public)/checkout/page.tsx (detecção de cliente logado)
+30. Atualizar src/app/api/checkout/iniciar/route.ts (vincular clienteId)
+31. Atualizar src/components/Header.tsx (estado de login no ícone de conta)
+32. npm run build → verificar TypeScript
+33. Testar fluxo completo: cadastro → login → pedido → visualização
+```
+
+---
+
+## OBSERVAÇÕES FINAIS PARA O IMPLEMENTADOR
+
+1. **`params` é Promise:** Em todos os Route Handlers com `[id]`, usar `const { id } = await params;`
+
+2. **Decimal do Prisma:** `parseFloat(valor.toString())` em todo campo Decimal retornado pela API.
+
+3. **Erro genérico no login:** Nunca revelar se o CPF existe ou não. Resposta sempre idêntica para "CPF não encontrado" e "PIN incorreto".
+
+4. **bcrypt no PIN:** Usar a função `hashPassword()` de `@/src/lib/password.ts` que já usa salt 12. **Nunca** armazenar PIN em plaintext.
+
+5. **Edge Runtime:** O middleware (`proxy.ts`) roda no Edge Runtime do Next.js. Usar apenas `jose` (não `jsonwebtoken`) para JWT — já é o padrão do projeto.
+
+6. **CSS:** Tailwind 4 — não usar `@apply` em arquivos `.tsx`, apenas classes inline.
+
+7. **Ícones:** Apenas `lucide-react` — já instalado.
+
+8. **Formulários:** Não instalar `react-hook-form` — o projeto usa `useState` + `zod` diretamente (padrão já estabelecido).
+
+9. **`validarCPF`:** Já existe em `@/src/utils/validators.ts` — reutilizar sem duplicar.
+
+10. **`formatarCPF`, `formatarTelefone`:** Também em `@/src/utils/validators.ts` — reutilizar.
