@@ -113,8 +113,6 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
             </span>
           </div>
 
-          <p className="text-gray-600 text-sm sm:text-base mb-6 leading-relaxed">{produto.descricao}</p>
-
           {/* Quantidade + Carrinho */}
           <div className="flex flex-row gap-3 mb-6">
             {produto.emEstoque && (
