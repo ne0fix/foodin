@@ -10,7 +10,7 @@ export default function SegurancaPage() {
   const [pinAtual, setPinAtual] = useState('');
   const [pinNovo, setPinNovo] = useState('');
   const [pinNovoConfirmacao, setPinNovoConfirmacao] = useState('');
-  
+
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState(false);
@@ -45,7 +45,7 @@ export default function SegurancaPage() {
       setPinAtual('');
       setPinNovo('');
       setPinNovoConfirmacao('');
-      
+
       // Redirect após 2 segundos
       setTimeout(() => router.push('/cliente'), 2000);
 
@@ -57,23 +57,23 @@ export default function SegurancaPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-500">
-      
-      <div className="space-y-2">
+    <div className="space-y-6">
+
+      <div className="space-y-1">
         <h1 className="text-2xl font-bold text-gray-900">Segurança da Conta</h1>
         <p className="text-sm text-gray-500">Mantenha sua conta protegida trocando seu PIN regularmente.</p>
       </div>
 
-      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center gap-3">
+      <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
             <Lock size={20} />
           </div>
           <h3 className="font-bold text-gray-900 text-sm uppercase tracking-wider">Alterar PIN de Acesso</h3>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-8">
-          
+        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-6">
+
           <div className="space-y-4">
             <PinInput
               label="PIN Atual"
@@ -85,7 +85,7 @@ export default function SegurancaPage() {
 
           <div className="h-px bg-gray-100" />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-4">
               <PinInput
                 label="Novo PIN (4 dígitos)"
@@ -119,7 +119,7 @@ export default function SegurancaPage() {
           <button
             disabled={carregando || sucesso}
             type="submit"
-            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-3 sm:py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
           >
             {carregando ? <Loader2 className="animate-spin" size={20} /> : 'ATUALIZAR MEU PIN'}
           </button>

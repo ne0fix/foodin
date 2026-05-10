@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, MapPin, Plus, Trash2, CheckCircle2, Loader2, Home, Briefcase, Map } from 'lucide-react';
+import { User, MapPin, Plus, Trash2, Loader2, Home, Briefcase, Map } from 'lucide-react';
 import { useViaCep } from '@/src/hooks/useViaCep';
 import { formatarTelefone, formatarCPF } from '@/src/utils/validators';
 
@@ -162,22 +162,22 @@ export default function PerfilPage() {
 
   if (carregando) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="animate-spin text-green-600" size={40} />
+      <div className="py-12 flex justify-center">
+        <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
-      
+    <div className="space-y-6">
+
       <h1 className="text-2xl font-bold text-gray-900">Meu Perfil</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+
         {/* Lado Esquerdo: Dados Pessoais */}
         <section className="md:col-span-1 space-y-6">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 space-y-6">
             <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm uppercase tracking-wider text-gray-400">
               <User size={18} />
               Dados Pessoais
@@ -232,13 +232,13 @@ export default function PerfilPage() {
 
         {/* Lado Direito: Endereços */}
         <section className="md:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm uppercase tracking-wider text-gray-400">
                 <MapPin size={18} />
                 Meus Endereços
               </h3>
-              <button 
+              <button
                 onClick={() => setMostrandoAddEndereco(true)}
                 className="text-xs font-bold text-green-600 flex items-center gap-1 hover:underline"
               >
@@ -248,8 +248,8 @@ export default function PerfilPage() {
 
             <div className="divide-y divide-gray-100">
               {cliente?.enderecos.map(end => (
-                <div key={end.id} className="p-6 flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
+                <div key={end.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="flex items-start gap-3">
                     <div className="w-10 h-10 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center flex-shrink-0">
                       {end.apelido === 'Casa' ? <Home size={20} /> : end.apelido === 'Trabalho' ? <Briefcase size={20} /> : <Map size={20} />}
                     </div>
@@ -271,16 +271,16 @@ export default function PerfilPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex items-center gap-2 sm:flex-col sm:items-end self-start">
                     {!end.principal && (
-                      <button 
+                      <button
                         onClick={() => handleSetPrincipal(end.id)}
                         className="text-[10px] font-bold text-gray-400 hover:text-green-600 uppercase tracking-wide border border-gray-200 px-2 py-1 rounded-lg hover:border-green-300 transition-all"
                       >
                         Definir como principal
                       </button>
                     )}
-                    <button 
+                    <button
                       onClick={() => handleRemoverEndereco(end.id)}
                       className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors"
                     >
@@ -302,7 +302,7 @@ export default function PerfilPage() {
                     <Plus size={24} className="rotate-45" />
                   </button>
                 </div>
-                
+
                 <form onSubmit={handleAddEndereco} className="p-6 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>

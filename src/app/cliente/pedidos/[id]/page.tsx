@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, Package, MapPin, CreditCard, Copy, CheckCircle2, Loader2, QrCode } from 'lucide-react';
+import { ChevronLeft, Package, MapPin, CreditCard, Copy, CheckCircle2, QrCode } from 'lucide-react';
 import { StatusBadge } from '@/src/components/ui/StatusBadge';
 import { OrderTimeline } from '@/src/components/ui/OrderTimeline';
 import { formatarMoeda } from '@/src/utils/formatadores';
@@ -71,8 +71,8 @@ export default function PedidoDetalhePage() {
 
   if (carregando) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="animate-spin text-green-600" size={40} />
+      <div className="py-12 flex justify-center">
+        <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -89,11 +89,11 @@ export default function PedidoDetalhePage() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-12 overflow-x-hidden animate-in fade-in duration-500">
-      
+    <div className="space-y-6">
+
       {/* Header */}
       <div className="flex items-center justify-between">
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 hover:text-green-600 font-bold transition-colors">
+        <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-green-600 font-medium transition-colors">
           <ChevronLeft size={20} />
           Voltar
         </button>
@@ -104,7 +104,7 @@ export default function PedidoDetalhePage() {
       </div>
 
       {/* Status e Timeline */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6 space-y-5 sm:space-y-6">
+      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="space-y-1">
             <p className="text-xs sm:text-sm text-gray-500">
@@ -132,16 +132,16 @@ export default function PedidoDetalhePage() {
 
       {/* PIX Pendente */}
       {(pedido.statusCliente === 'PEDIDO_REALIZADO' || pedido.statusCliente === 'PAGAMENTO_PROCESSANDO') && pedido.metodoPagamento === 'PIX' && pedido.mpQrCode && (
-        <section className="bg-green-600 text-white rounded-2xl p-5 sm:p-6 shadow-lg space-y-5">
+        <section className="bg-green-600 text-white rounded-2xl p-4 sm:p-5 space-y-4">
           <div className="flex items-center gap-3">
             <QrCode size={24} className="sm:w-7 sm:h-7" />
             <h3 className="text-lg sm:text-xl font-black">Aguardando Pagamento</h3>
           </div>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-8 bg-white/10 p-5 sm:p-6 rounded-2xl backdrop-blur-sm border border-white/20">
+
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-white/10 p-4 rounded-2xl border border-white/20">
             {pedido.mpQrCodeBase64 && (
               <div className="bg-white p-2 rounded-xl flex-shrink-0">
-                <Image 
+                <Image
                   src={`data:image/png;base64,${pedido.mpQrCodeBase64}`}
                   alt="QR Code PIX"
                   width={140}
@@ -168,7 +168,7 @@ export default function PedidoDetalhePage() {
       )}
 
       <div className="flex flex-col gap-6">
-        
+
         {/* Itens */}
         <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-gray-100">
@@ -179,8 +179,8 @@ export default function PedidoDetalhePage() {
           </div>
           <div className="divide-y divide-gray-100">
             {pedido.items.map(item => (
-              <div key={item.id} className="p-4 sm:p-5 flex items-center gap-4">
-                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
+              <div key={item.id} className="p-4 flex items-center gap-3">
+                <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
                   <Image src={item.imagemProduto} alt={item.nomeProduto} fill className="object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -193,7 +193,7 @@ export default function PedidoDetalhePage() {
               </div>
             ))}
           </div>
-          <div className="bg-gray-50 p-5 sm:p-6 space-y-2">
+          <div className="bg-gray-50 p-4 sm:p-5 space-y-2">
             <div className="flex justify-between text-sm text-gray-600">
               <span>Subtotal</span>
               <span>{formatarMoeda(pedido.subtotal)}</span>
@@ -210,8 +210,8 @@ export default function PedidoDetalhePage() {
         </section>
 
         {/* Informações Extras (Accordions em Mobile) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+
           {/* Pagamento */}
           <details className="group bg-white rounded-2xl border border-gray-100 overflow-hidden" open>
             <summary className="p-4 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none min-h-[44px]">

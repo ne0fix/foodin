@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Package, ChevronRight, ChevronLeft, Search, Filter } from 'lucide-react';
+import { Package, ChevronRight, ChevronLeft, Filter } from 'lucide-react';
 import { StatusBadge } from '@/src/components/ui/StatusBadge';
 import { formatarMoeda } from '@/src/utils/formatadores';
 
@@ -41,15 +41,15 @@ export default function PedidosPage() {
   }, [pagina, statusFiltro]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-900">Meus Pedidos</h1>
-        
+
         {/* Filtro */}
-        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2">
+        <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-xl px-3 py-2.5">
           <Filter size={18} className="text-gray-400" />
-          <select 
+          <select
             value={statusFiltro}
             onChange={e => { setStatusFiltro(e.target.value); setPagina(1); }}
             className="text-sm font-bold text-gray-700 outline-none bg-transparent cursor-pointer"
@@ -65,58 +65,42 @@ export default function PedidosPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="divide-y divide-gray-100">
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="divide-y divide-gray-50">
           {carregando ? (
-            <div className="p-12 text-center text-gray-400">Carregando seus pedidos...</div>
+            <div className="py-12 flex justify-center">
+              <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+            </div>
           ) : pedidos.length > 0 ? (
             pedidos.map(pedido => (
-              <Link 
-                key={pedido.id} 
-                href={`/cliente/pedidos/${pedido.id}`}
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors gap-4"
-              >
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Package size={20} className="sm:w-6 sm:h-6" />
-                  </div>
-                  <div className="space-y-0.5 sm:space-y-1">
-                    <p className="text-sm sm:text-base font-bold text-gray-900">Pedido #{pedido.numero}</p>
-                    <p className="text-xs sm:text-sm text-gray-500">
-                      {new Date(pedido.criadoEm).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-gray-400">
-                      {pedido.itens} {pedido.itens === 1 ? 'item' : 'itens'} · {pedido.metodoPagamento}
-                    </p>
-                  </div>
+              <Link key={pedido.id} href={`/cliente/pedidos/${pedido.id}`}
+                className="flex items-center gap-3 px-4 sm:px-5 py-4 hover:bg-gray-50/60 transition-colors">
+                <div className="w-10 h-10 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Package size={18} />
                 </div>
-
-                <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 border-t border-gray-100 sm:border-t-0 pt-3 sm:pt-0 mt-1 sm:mt-0">
-                  <div className="text-left sm:text-right">
-                    <p className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold tracking-wider">Total</p>
-                    <p className="text-base sm:text-lg font-black text-green-600">{formatarMoeda(pedido.total)}</p>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <StatusBadge status={pedido.statusCliente} />
-                    <ChevronRight size={18} className="text-gray-300 hidden sm:block" />
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-900">Pedido #{pedido.numero}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(pedido.criadoEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })} · {pedido.itens} {pedido.itens === 1 ? 'item' : 'itens'}
+                  </p>
                 </div>
+                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                  <p className="text-sm font-black text-gray-900">{formatarMoeda(pedido.total)}</p>
+                  <StatusBadge status={pedido.statusCliente} />
+                </div>
+                <ChevronRight size={16} className="text-gray-300 flex-shrink-0 ml-1" />
               </Link>
             ))
           ) : (
-            <div className="p-20 text-center space-y-4">
-              <div className="w-20 h-20 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mx-auto">
-                <Search size={40} />
+            <div className="py-16 flex flex-col items-center gap-4 text-center px-6">
+              <div className="w-16 h-16 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center">
+                <Package size={32} />
               </div>
               <div>
                 <p className="text-gray-900 font-bold text-lg">Nenhum pedido encontrado.</p>
-                <p className="text-gray-500">Tente mudar o filtro ou faça sua primeira compra!</p>
+                <p className="text-gray-500 text-sm">Tente mudar o filtro ou faça sua primeira compra!</p>
               </div>
-              <Link href="/" className="inline-block bg-green-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-green-700 transition-colors shadow-lg">
+              <Link href="/" className="inline-block bg-green-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-green-700 transition-colors">
                 Ir para as compras
               </Link>
             </div>
@@ -125,7 +109,7 @@ export default function PedidosPage() {
 
         {/* Paginação */}
         {totalPaginas > 1 && (
-          <div className="p-6 bg-gray-50 border-t border-gray-100 flex items-center justify-center gap-4">
+          <div className="p-4 sm:p-5 bg-gray-50 border-t border-gray-100 flex items-center justify-center gap-4">
             <button
               disabled={pagina === 1 || carregando}
               onClick={() => setPagina(p => p - 1)}
