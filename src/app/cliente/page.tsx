@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Package, ChevronRight, ShoppingBag, ShieldCheck, TrendingUp, Clock } from 'lucide-react';
+import { Package, ChevronRight, ShoppingBag, ShieldCheck, TrendingUp } from 'lucide-react';
 import { StatusBadge } from '@/src/components/ui/StatusBadge';
 import { formatarMoeda } from '@/src/utils/formatadores';
 
@@ -62,15 +62,14 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── KPIs ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {[
-          { label: 'Total de pedidos', value: carregando ? '—' : String(total),                                                                                                   icon: Package,    color: 'text-blue-600',   bg: 'bg-blue-50'   },
-          { label: 'Último status',    value: carregando ? '—' : (pedidos[0]?.statusCliente ?? 'Nenhum'),                                                                         icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50', badge: true },
-          { label: 'Membro desde',     value: carregando ? '—' : (cliente ? new Date(cliente.criadoEm).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }) : '—'), icon: Clock,      color: 'text-amber-600',  bg: 'bg-amber-50'  },
+          { label: 'Total de pedidos', value: carregando ? '—' : String(total),                                   icon: Package,    color: 'text-blue-600',   bg: 'bg-blue-50'   },
+          { label: 'Último status',    value: carregando ? '—' : (pedidos[0]?.statusCliente ?? 'Nenhum'),         icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50', badge: true },
         ].map(({ label, value, icon: Icon, color, bg, badge }) => (
-          <div key={label} className="bg-white rounded-2xl border border-gray-100 px-4 py-4 flex items-center gap-4">
-            <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
-              <Icon size={20} className={color} />
+          <div key={label} className="bg-white rounded-2xl border border-gray-100 px-4 py-4 flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
+              <Icon size={18} className={color} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs text-gray-400 font-medium">{label}</p>
