@@ -142,7 +142,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
     .bold     { font-weight: bold; }
     .big      { font-size: 14px; font-weight: bold; }
     .small    { font-size: 9px; }
-    .sep      { border-bottom: 1px solid #000; margin: 5px 0; }
+    .sep      { border-bottom: 1px dotted #000; margin: 5px 0; }
     .row      { display: flex; justify-content: space-between; align-items: baseline; }
     .indent   { padding-left: 8px; color: #333; }
     .item-nome{ font-weight: bold; margin-top: 5px; }
