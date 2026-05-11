@@ -39,12 +39,12 @@ export default function PoliticaPrivacidadePage() {
 
         <section>
           <h2 className="text-lg font-bold text-gray-900 mb-3">5. Seus direitos</h2>
-          <p>Você pode solicitar a qualquer momento a exclusão dos seus dados ou a correção de informações incorretas. Entre em contato pelo WhatsApp <strong>(85) 98105-8342</strong>.</p>
+          <p>Você pode solicitar a qualquer momento a exclusão dos seus dados ou a correção de informações incorretas. Entre em contato pelo WhatsApp <strong>(85) 99113-5449</strong>.</p>
         </section>
 
         <section>
           <h2 className="text-lg font-bold text-gray-900 mb-3">6. Contato</h2>
-          <p>Dúvidas sobre esta política? Fale conosco pelo WhatsApp: <strong>(85) 98105-8342</strong>.</p>
+          <p>Dúvidas sobre esta política? Fale conosco pelo WhatsApp: <strong>(85) 99113-5449</strong>.</p>
         </section>
       </div>
 

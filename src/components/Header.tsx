@@ -33,7 +33,7 @@ export default function Header() {
         <div className="container mx-auto px-4 max-w-7xl flex justify-between items-center gap-4">
           <p className="font-medium">🚚 Entrega grátis em compras acima de <strong>R$&nbsp;89,00</strong> — aproveite!</p>
           <div className="flex gap-5 items-center flex-shrink-0">
-            <span className="flex items-center gap-1 opacity-90"><Phone size={12} /> (85) 98105-8342</span>
+            <span className="flex items-center gap-1 opacity-90"><Phone size={12} /> (85) 99113-5449</span>
             <span className="flex items-center gap-1 opacity-90"><MapPin size={12} /> Pacatuba, CE</span>
           </div>
         </div>

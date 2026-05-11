@@ -74,6 +74,11 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
       hour: '2-digit', minute: '2-digit', second: '2-digit',
     });
 
+    const cpfMascarado = (pedido.compradorCpf ?? '').replace(
+      /(\d{3})\.\d{3}\.\d{3}(-\d{2})/,
+      '$1.***.***$2',
+    );
+
     const itensHtml = pedido.items.map((i: any) => {
       const nome = i.nomeProduto.length > 28 ? i.nomeProduto.substring(0, 26) + '..' : i.nomeProduto;
       const subtotal = formatarMoeda(i.subtotal);
@@ -97,7 +102,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
         <div class="sep"></div>
         <div>Av. XVII, 404 - Sen. Carlos Jereissati</div>
         <div>Pacatuba - CE &nbsp; CEP: 61800-000</div>
-        <div>Tel: (85) 98105-8342</div>
+        <div>Tel: (85) 99113-5449</div>
         <div class="obs">Aguarde o aviso de liberacao para retirada.</div>
       `;
 
@@ -155,7 +160,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
     <div class="small">CNPJ: 00.000.000/0001-00</div>
     <div class="small">Av. XVII, 404 - Sen. Carlos Jereissati</div>
     <div class="small">Pacatuba - CE &nbsp; CEP: 61800-000</div>
-    <div class="small">Tel: (85) 98105-8342</div>
+    <div class="small">Tel: (85) 99113-5449</div>
   </div>
 
   <div class="sep" style="margin-top:6px"></div>
@@ -178,7 +183,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
   <div class="section-title">DADOS DO CLIENTE</div>
   <div class="sep"></div>
   <div class="row"><span>Nome:</span><span>${pedido.compradorNome}</span></div>
-  <div class="row"><span>CPF:</span><span>${pedido.compradorCpf}</span></div>
+  <div class="row"><span>CPF:</span><span>${cpfMascarado}</span></div>
   <div class="row"><span>Tel:</span><span>${pedido.compradorTelefone}</span></div>
 
   <div class="sep"></div>
@@ -423,7 +428,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
                           <p className="text-[11px] text-gray-500 leading-relaxed">
                             Av. XVII, 404 - Sen. Carlos Jereissati<br />
                             Pacatuba - CE · CEP 61800-000<br />
-                            (85) 98105-8342
+                            (85) 99113-5449
                           </p>
                         </div>
                       </div>

@@ -270,7 +270,7 @@ export default function PedidoDetalhePage() {
                 <p className="font-bold text-gray-900">Retirada em Loja</p>
                 <p className="text-xs text-gray-700">Av. XVII, 404 - Sen. Carlos Jereissati</p>
                 <p className="text-xs text-gray-700">Pacatuba - CE, 61800-000</p>
-                <p className="text-xs text-gray-700">(85) 98105-8342</p>
+                <p className="text-xs text-gray-700">(85) 99113-5449</p>
                 <p className="text-xs text-gray-500 mt-1">Aguarde o status &quot;Liberado&quot; para retirar</p>
               </div>
             ) : (

@@ -34,7 +34,7 @@ export default function TermosPage() {
 
         <section>
           <h2 className="text-lg font-bold text-gray-900 mb-3">5. Cancelamentos e Devoluções</h2>
-          <p>Pedidos podem ser cancelados antes da saída para entrega. Para cancelamentos ou trocas, entre em contato pelo WhatsApp <strong>(85) 98105-8342</strong>.</p>
+          <p>Pedidos podem ser cancelados antes da saída para entrega. Para cancelamentos ou trocas, entre em contato pelo WhatsApp <strong>(85) 99113-5449</strong>.</p>
         </section>
 
         <section>
@@ -44,7 +44,7 @@ export default function TermosPage() {
 
         <section>
           <h2 className="text-lg font-bold text-gray-900 mb-3">7. Contato</h2>
-          <p>Dúvidas sobre estes termos? Fale conosco pelo WhatsApp: <strong>(85) 98105-8342</strong>.</p>
+          <p>Dúvidas sobre estes termos? Fale conosco pelo WhatsApp: <strong>(85) 99113-5449</strong>.</p>
         </section>
       </div>
 

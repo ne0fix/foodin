@@ -25,7 +25,7 @@ export default function Footer() {
               Produtos frescos e de qualidade entregues na sua porta. Compramos diretamente dos produtores para garantir o melhor preço.
             </p>
             <div className="space-y-2 text-sm">
-              <p className="flex items-center gap-2"><Phone size={14} className="text-green-500 flex-shrink-0" /> (85) 98105-8342</p>
+              <p className="flex items-center gap-2"><Phone size={14} className="text-green-500 flex-shrink-0" /> (85) 99113-5449</p>
               <p className="flex items-start gap-2"><MapPin size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
                 <span>Av. XVII, 404 - Sen. Carlos Jereissati<br />Pacatuba - CE, 61800-000</span>
               </p>

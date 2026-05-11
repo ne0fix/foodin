@@ -32,7 +32,7 @@ export default function SobrePage() {
         </div>
         <div className="flex items-center gap-3 text-sm text-gray-600">
           <Phone size={16} className="text-green-600 flex-shrink-0" />
-          <span>(85) 98105-8342</span>
+          <span>(85) 99113-5449</span>
         </div>
         <div className="flex items-center gap-3 text-sm text-gray-600">
           <Clock size={16} className="text-green-600 flex-shrink-0" />
