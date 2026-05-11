@@ -170,7 +170,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
   <!-- CABEÇALHO -->
   <div class="center">
     <div class="big">SUPERMERCADO G&amp;N</div>
-    <div class="small">CNPJ: 00.000.000/0001-00</div>
+    <div class="small">CNPJ: 08.143.625/0001-14</div>
     <div class="small">Av. XVII, 404 - Sen. Carlos Jereissati</div>
     <div class="small">Pacatuba - CE &nbsp; CEP: 61800-000</div>
     <div class="small">Tel: (85) 99113-5449</div>
