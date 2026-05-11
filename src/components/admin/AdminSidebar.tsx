@@ -10,11 +10,13 @@ import {
   LayoutList,
   ExternalLink,
   ShoppingBag,
+  Users,
 } from 'lucide-react';
 
 const navLinks = [
   { href: '/admin/dashboard', label: 'Dashboard',      icon: LayoutDashboard },
-  { href: '/admin/pedidos',   label: 'Pedidos',         icon: ShoppingBag },
+  { href: '/admin/pedidos',   label: 'Pedidos',        icon: ShoppingBag },
+  { href: '/admin/clientes',  label: 'Clientes',       icon: Users },
   { href: '/admin/produtos',  label: 'Produtos',       icon: Package },
   { href: '/admin/categorias',label: 'Categorias',     icon: Tag },
   { href: '/admin/secoes',    label: 'Seções da Home', icon: LayoutList },
