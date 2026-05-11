@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Loader2, Printer, ArrowRight, X, Package,
-  User, CreditCard, MapPin, ChevronLeft, ChevronRight, ShoppingBag,
+  User, CreditCard, MapPin, ChevronLeft, ChevronRight, ShoppingBag, RotateCcw,
 } from 'lucide-react';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import { OrderTimeline } from '@/src/components/ui/OrderTimeline';
@@ -53,6 +53,8 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
   const [pedido, setPedido] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [avancando, setAvancando] = useState(false);
+  const [estornando, setEstornando] = useState(false);
+  const [confirmarEstorno, setConfirmarEstorno] = useState(false);
 
   useEffect(() => {
     fetch(`/api/admin/pedidos/${pedidoId}`)
@@ -108,6 +110,26 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
       console.error(e);
     } finally {
       setAvancando(false);
+    }
+  };
+
+  const executarEstorno = async () => {
+    if (!pedido) return;
+    setEstornando(true);
+    setConfirmarEstorno(false);
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedidoId}/reembolso`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setPedido({ ...pedido, status: 'CANCELLED', statusCliente: 'CANCELADO' });
+      } else {
+        alert(`Erro ao estornar: ${data.error ?? 'Erro desconhecido'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Erro de conexão ao tentar estornar.');
+    } finally {
+      setEstornando(false);
     }
   };
 
@@ -223,16 +245,51 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
                   <h3 className="text-sm font-bold text-gray-900">Progresso do Pedido</h3>
                 </div>
                 <OrderTimeline statusAtual={pedido.statusCliente ?? pedido.status} entregaTipo={pedido.entregaTipo} />
-                {pedido.statusCliente === 'EM_SEPARACAO' && (
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      onClick={avancarStatus}
-                      disabled={avancando}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-green-600/25 hover:-translate-y-0.5"
-                    >
-                      {avancando ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
-                      {pedido.entregaTipo === 'RETIRADA' ? 'Marcar como Liberado para Retirada' : 'Marcar como Saiu para Entrega'}
-                    </button>
+                {(pedido.statusCliente === 'EM_SEPARACAO' || pedido.status === 'PAID') && (
+                  <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+                    {/* Estorno — disponível para qualquer pedido PAID não cancelado */}
+                    {pedido.status === 'PAID' && pedido.statusCliente !== 'CANCELADO' && (
+                      confirmarEstorno ? (
+                        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
+                          <span className="text-xs font-semibold text-red-700">Confirmar estorno?</span>
+                          <button
+                            onClick={executarEstorno}
+                            disabled={estornando}
+                            className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"
+                          >
+                            {estornando ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
+                            Confirmar
+                          </button>
+                          <button
+                            onClick={() => setConfirmarEstorno(false)}
+                            className="text-xs font-semibold text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmarEstorno(true)}
+                          disabled={estornando}
+                          className="flex items-center gap-2 bg-white hover:bg-red-50 border border-red-200 text-red-600 font-bold px-4 py-2.5 rounded-xl text-sm transition-all hover:border-red-300"
+                        >
+                          <RotateCcw size={14} />
+                          Extornar Pagamento
+                        </button>
+                      )
+                    )}
+
+                    {/* Avançar status — só quando EM_SEPARACAO */}
+                    {pedido.statusCliente === 'EM_SEPARACAO' && (
+                      <button
+                        onClick={avancarStatus}
+                        disabled={avancando}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-green-600/25 hover:-translate-y-0.5"
+                      >
+                        {avancando ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
+                        {pedido.entregaTipo === 'RETIRADA' ? 'Marcar como Liberado para Retirada' : 'Marcar como Saiu para Entrega'}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
