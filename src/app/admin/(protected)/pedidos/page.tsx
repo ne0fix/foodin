@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense, useTransition } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Loader2, Printer, ArrowRight, X, Package,
   User, CreditCard, MapPin, ChevronLeft, ChevronRight, ShoppingBag, RotateCcw,
-  Mail, Phone, FileText, Truck, Store,
+  Mail, Phone, FileText, Truck, Store, Bell,
 } from 'lucide-react';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import { OrderTimeline } from '@/src/components/ui/OrderTimeline';
@@ -638,9 +638,12 @@ function PedidosContent() {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [pedidoSelecionado, setPedidoSelecionado] = useState<string | null>(null);
+  const [novos, setNovos] = useState(0);
+  const referenceIdRef = useRef<string | null>(null);
 
   const carregar = useCallback(async () => {
     setLoading(true);
+    setNovos(0);
     try {
       const q = new URLSearchParams(searchParams.toString());
       if (!q.get('page')) q.set('page', '1');
@@ -648,12 +651,28 @@ function PedidosContent() {
       const json = await res.json();
       setPedidos(json.pedidos ?? []);
       setPagination({ page: json.page, totalPages: json.pages, total: json.total });
+      if (json.pedidos?.[0]) referenceIdRef.current = json.pedidos[0].id;
     } finally {
       setLoading(false);
     }
   }, [searchParams]);
 
   useEffect(() => { carregar(); }, [carregar]);
+
+  // Polling: verifica novos pedidos a cada 10 s
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/admin/pedidos/ping');
+        const { ultimoId } = await res.json();
+        if (referenceIdRef.current && ultimoId && ultimoId !== referenceIdRef.current) {
+          setNovos(n => n + 1);
+          referenceIdRef.current = ultimoId; // evita contar o mesmo pedido mais de uma vez
+        }
+      } catch { /* silencioso */ }
+    }, 10_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const setPage = (page: number) => {
     const p = new URLSearchParams(searchParams.toString());
@@ -676,6 +695,18 @@ function PedidosContent() {
       <Suspense fallback={<div className="h-10" />}>
         <PageFilters />
       </Suspense>
+
+      {/* Banner: novo pedido em tempo real */}
+      {novos > 0 && !loading && (
+        <button
+          onClick={carregar}
+          className="w-full flex items-center justify-center gap-2.5 py-3 px-4 bg-green-50 hover:bg-green-100 border border-green-300 text-green-800 text-sm font-bold rounded-xl transition-colors"
+        >
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+          <Bell size={15} />
+          {novos === 1 ? 'Novo pedido recebido!' : `${novos} novos pedidos!`} — Clique para atualizar
+        </button>
+      )}
 
       {/* Lista */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
