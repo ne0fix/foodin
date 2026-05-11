@@ -8,6 +8,7 @@ import {
   XCircle, Pencil, Trash2, Save, Eye, EyeOff, Lock,
 } from 'lucide-react';
 import { formatarMoeda } from '@/src/utils/formatadores';
+import { ModalDetalhesPedido } from '@/src/app/admin/(protected)/pedidos/page';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,7 @@ function ModalCliente({ clienteId, onClose, onSaved, onDeleted }: {
   const [confirmarExcluir, setConfirmar] = useState(false);
   const [showPin, setShowPin]           = useState(false);
   const [aba, setAba]                   = useState<'info' | 'enderecos' | 'pedidos'>('info');
+  const [pedidoAberto, setPedidoAberto] = useState<string | null>(null);
   const [form, setForm]                 = useState({ nome: '', whatsapp: '', pin: '', ativo: true });
   const [erro, setErro]                 = useState('');
 
@@ -157,6 +159,14 @@ function ModalCliente({ clienteId, onClose, onSaved, onDeleted }: {
               </button>
             ))}
           </div>
+        )}
+
+        {/* Modal de detalhes do pedido (sobreposto) */}
+        {pedidoAberto && (
+          <ModalDetalhesPedido
+            pedidoId={pedidoAberto}
+            onClose={() => setPedidoAberto(null)}
+          />
         )}
 
         {/* Conteúdo */}
@@ -374,6 +384,12 @@ function ModalCliente({ clienteId, onClose, onSaved, onDeleted }: {
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${st.cls}`}>{st.label}</span>
                         <p className="text-sm font-bold text-gray-900 tabular-nums">{formatarMoeda(p.total)}</p>
+                        <button
+                          onClick={() => setPedidoAberto(p.id)}
+                          className="px-3 py-1.5 bg-green-50 hover:bg-green-600 hover:text-white text-green-700 rounded-lg text-xs font-bold transition-all flex-shrink-0"
+                        >
+                          Ver
+                        </button>
                       </div>
                     );
                   })}
