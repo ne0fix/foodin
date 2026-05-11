@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/src/lib/prisma';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 // DELETE /api/admin/secoes/[id]/itens/[produtoId]
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string; produtoId: string }> },
 ) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id: secaoId, produtoId } = await params;
 

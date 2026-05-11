@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/src/lib/prisma';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 const AddItemSchema = z.object({ produtoId: z.string().min(1) });
 
 // DELETE /api/admin/secoes/[id]/itens?produtoId=xxx
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id: secaoId } = await params;
     const produtoId = req.nextUrl.searchParams.get('produtoId');
@@ -27,6 +29,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
 // POST /api/admin/secoes/[id]/itens
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id: secaoId } = await params;
     const body = await req.json();

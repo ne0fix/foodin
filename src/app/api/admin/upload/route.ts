@@ -1,5 +1,6 @@
 import { put } from '@vercel/blob';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 export const maxDuration = 30; // aumenta timeout para 30s (evita cold start timeout)
 
@@ -21,7 +22,8 @@ function sanitizeFilename(name: string): string {
   return `produtos/${timestamp}-${rand}-${safe}.${ext}`;
 }
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  if (!await requireAdmin(request)) return unauthorizedResponse();
   const { searchParams } = new URL(request.url);
   const filename = searchParams.get('filename');
 

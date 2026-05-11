@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/src/lib/prisma';
 import { OrdemItensSchema } from '@/src/utils/validators';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 // PUT /api/admin/secoes/[id]/ordem
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id: secaoId } = await params;
     const body = await req.json();

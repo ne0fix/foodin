@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/src/lib/prisma';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 type Params = { params: Promise<{ id: string }> };
 
 // GET /api/admin/clientes/[id]
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     const cliente = await prisma.cliente.findUnique({
@@ -42,6 +44,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 // PUT /api/admin/clientes/[id]
 export async function PUT(req: NextRequest, { params }: Params) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     const body = await req.json();
@@ -67,7 +70,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 // DELETE /api/admin/clientes/[id]
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     const totalPedidos = await prisma.order.count({ where: { clienteId: id } });

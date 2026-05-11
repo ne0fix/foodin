@@ -4,9 +4,11 @@ import { Prisma } from '@prisma/client';
 import prisma from '@/src/lib/prisma';
 import { produtoToAdminDTO } from '@/src/lib/dto';
 import { ProdutoCreateSchema } from '@/src/utils/validators';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 // GET /api/admin/produtos
 export async function GET(request: NextRequest) {
+  if (!await requireAdmin(request)) return unauthorizedResponse();
   try {
     const { searchParams } = request.nextUrl;
     const page = parseInt(searchParams.get('page') || '1');
@@ -58,6 +60,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/admin/produtos
 export async function POST(request: NextRequest) {
+  if (!await requireAdmin(request)) return unauthorizedResponse();
     try {
         const body = await request.json();
         const validation = ProdutoCreateSchema.safeParse(body);

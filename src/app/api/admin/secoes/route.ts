@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import prisma from '@/src/lib/prisma';
 import { secaoToAdminDTO, produtoToDTO, PrismaSecaoCompleta } from '@/src/lib/dto';
 import { SecaoCreateSchema } from '@/src/utils/validators';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 async function resolverPrevia(secao: PrismaSecaoCompleta) {
   if (secao.modoSelecao === 'MANUAL') {
@@ -22,7 +23,8 @@ async function resolverPrevia(secao: PrismaSecaoCompleta) {
 }
 
 // GET /api/admin/secoes
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const secoes = await prisma.secao.findMany({
       orderBy: { ordem: 'asc' },
@@ -51,6 +53,7 @@ export async function GET() {
 
 // POST /api/admin/secoes
 export async function POST(req: NextRequest) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const body = await req.json();
     const validation = SecaoCreateSchema.safeParse(body);

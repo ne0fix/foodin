@@ -37,6 +37,7 @@ model Produto {
   imagens          String[] @default([])
   quantidadePacote String
   emEstoque        Boolean  @default(true)
+  estoqueQuantidade Int     @default(-1) // -1 = não rastreado; >=0 = rastreado
   avaliacao        Float    @default(0)
   numAvaliacoes    Int      @default(0)
   ativo            Boolean  @default(true)

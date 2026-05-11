@@ -3,9 +3,11 @@ import { revalidatePath } from 'next/cache';
 import prisma from '@/src/lib/prisma';
 import { CategoriaCreateSchema } from '@/src/utils/validators';
 import { Prisma } from '@prisma/client';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 // GET /api/admin/categorias
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!await requireAdmin(request)) return unauthorizedResponse();
     try {
         const categorias = await prisma.categoria.findMany({
             orderBy: {
@@ -21,6 +23,7 @@ export async function GET() {
 
 // POST /api/admin/categorias
 export async function POST(request: NextRequest) {
+  if (!await requireAdmin(request)) return unauthorizedResponse();
     try {
         const body = await request.json();
         const validation = CategoriaCreateSchema.safeParse(body);

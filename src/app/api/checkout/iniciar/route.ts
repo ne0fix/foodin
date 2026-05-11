@@ -3,6 +3,7 @@ import { prisma } from '@/src/lib/prisma';
 import MercadoPagoConfig, { Payment } from 'mercadopago';
 import { CheckoutIniciarPayload } from '@/src/models/checkout.model';
 import { verifyClienteJWT } from '@/src/lib/clienteAuth';
+import { notificarNovoPedido, notificarPagamentoAprovado } from '@/src/lib/notificacoes';
 
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
   const produtoIds = itens.map(i => i.produtoId);
   const produtos = await prisma.produto.findMany({
     where: { id: { in: produtoIds }, ativo: true },
-    select: { id: true, nome: true, preco: true, imagem: true, emEstoque: true },
+    select: { id: true, nome: true, preco: true, imagem: true, emEstoque: true, estoqueQuantidade: true },
   });
 
   if (produtos.length !== produtoIds.length) {
@@ -48,8 +49,18 @@ export async function POST(req: NextRequest) {
     }, { status: 409 });
   }
 
-  // ─── Calcular valores no backend ──────────────────────────────────────────
+  // ─── Validar quantidade disponível (quando rastreado) ────────────────────
   const produtoMap = new Map(produtos.map(p => [p.id, p]));
+  for (const item of itens) {
+    const produto = produtoMap.get(item.produtoId)!;
+    if (produto.estoqueQuantidade >= 0 && produto.estoqueQuantidade < item.quantidade) {
+      return NextResponse.json({
+        error: `Estoque insuficiente para "${produto.nome}". Disponível: ${produto.estoqueQuantidade}.`,
+      }, { status: 409 });
+    }
+  }
+
+  // ─── Calcular valores no backend ──────────────────────────────────────────
   let subtotal = 0;
   const orderItemsData = itens.map(item => {
     const produto = produtoMap.get(item.produtoId)!;
@@ -178,6 +189,15 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Notificar criação do pedido (fire-and-forget)
+      notificarNovoPedido({
+        id: order.id,
+        compradorNome: order.compradorNome,
+        compradorTelefone: order.compradorTelefone,
+        total,
+        entregaTipo: order.entregaTipo,
+      }).catch(() => {});
+
       return NextResponse.json({
         orderId:      order.id,
         metodo:       'PIX',
@@ -230,6 +250,22 @@ export async function POST(req: NextRequest) {
           pagoEm:      statusFinal === 'PAID' ? new Date() : null,
         },
       });
+
+      const orderInfo = {
+        id: order.id,
+        compradorNome: order.compradorNome,
+        compradorTelefone: order.compradorTelefone,
+        total,
+        entregaTipo: order.entregaTipo,
+      };
+
+      // Notificar criação do pedido
+      notificarNovoPedido(orderInfo).catch(() => {});
+
+      // Notificar pagamento aprovado imediatamente se cartão já foi aprovado
+      if (statusFinal === 'PAID') {
+        notificarPagamentoAprovado(orderInfo).catch(() => {});
+      }
 
       return NextResponse.json({
         orderId:      order.id,

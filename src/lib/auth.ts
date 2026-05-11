@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -37,4 +37,12 @@ export async function getAdminFromRequest(req: NextRequest): Promise<AdminJWTPay
     return verifyJWT(token);
   }
   return null;
+}
+
+export async function requireAdmin(req: NextRequest): Promise<AdminJWTPayload | null> {
+  return getAdminFromRequest(req);
+}
+
+export function unauthorizedResponse() {
+  return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
 }

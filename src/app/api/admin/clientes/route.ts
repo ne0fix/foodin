@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/src/lib/prisma';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 // GET /api/admin/clientes?page=1&q=search&ativo=true|false|all
 export async function GET(req: NextRequest) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { searchParams } = req.nextUrl;
     const page  = Math.max(1, parseInt(searchParams.get('page')  || '1'));
@@ -52,6 +54,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/admin/clientes
 export async function POST(req: NextRequest) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const body = await req.json();
     const { nome, cpf, whatsapp, pin } = body;

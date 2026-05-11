@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import MercadoPagoConfig, { Payment } from 'mercadopago';
 import { createHmac } from 'crypto';
+import { notificarPagamentoAprovado } from '@/src/lib/notificacoes';
 
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
@@ -79,7 +80,14 @@ export async function POST(req: NextRequest) {
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { id: true, status: true, statusCliente: true },
+    select: {
+      id: true,
+      status: true,
+      statusCliente: true,
+      compradorNome: true,
+      compradorTelefone: true,
+      items: { select: { produtoId: true, quantidade: true } },
+    },
   });
 
   if (!order) return NextResponse.json({ received: true });
@@ -123,16 +131,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   }
 
-  await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      status:      novoStatus,
-      statusCliente: statusClienteFinal,
-      mpStatus:    pagamento.status ?? null,
-      mpPaymentId,
-      pagoEm:      novoStatus === 'PAID' ? new Date() : undefined,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: orderId },
+      data: {
+        status:        novoStatus,
+        statusCliente: statusClienteFinal,
+        mpStatus:      pagamento.status ?? null,
+        mpPaymentId,
+        pagoEm:        novoStatus === 'PAID' ? new Date() : undefined,
+      },
+    });
+
+    // Decrementar estoque rastreado quando pagamento aprovado
+    if (novoStatus === 'PAID' && order.items.length > 0) {
+      for (const item of order.items) {
+        await tx.produto.updateMany({
+          where: { id: item.produtoId, estoqueQuantidade: { gte: 0 } },
+          data: { estoqueQuantidade: { decrement: item.quantidade } },
+        });
+        // Marcar emEstoque=false se chegou a zero
+        await tx.produto.updateMany({
+          where: { id: item.produtoId, estoqueQuantidade: 0 },
+          data: { emEstoque: false },
+        });
+      }
+    }
   });
+
+  if (novoStatus === 'PAID') {
+    notificarPagamentoAprovado({
+      id: orderId,
+      compradorNome: order.compradorNome ?? '',
+      compradorTelefone: order.compradorTelefone ?? null,
+      total: 0,
+    }).catch(() => {});
+  }
 
   console.log(`[webhook] Pedido ${orderId} → ${novoStatus}`);
   return NextResponse.json({ received: true });

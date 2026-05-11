@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/src/lib/prisma';
 import { CategoriaUpdateSchema } from '@/src/utils/validators';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 // PUT /api/admin/categorias/[id]
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     const body = await req.json();
@@ -34,7 +36,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 // DELETE /api/admin/categorias/[id]
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
 

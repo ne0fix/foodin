@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import prisma from '@/src/lib/prisma';
 import { produtoToAdminDTO } from '@/src/lib/dto';
 import { ProdutoUpdateSchema } from '@/src/utils/validators';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 const includeCompleto = {
   categoria: true,
@@ -10,9 +11,10 @@ const includeCompleto = {
 };
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     const produto = await prisma.produto.findUnique({ where: { id }, include: includeCompleto });
@@ -28,6 +30,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     const body = await req.json();
@@ -70,9 +73,10 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     await prisma.produto.update({ where: { id }, data: { ativo: false } });

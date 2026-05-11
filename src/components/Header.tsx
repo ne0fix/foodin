@@ -1,19 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCarrinhoViewModel } from '../viewmodels/carrinho.vm';
 import { ShoppingCart, User, Search, Phone, MapPin, ChevronDown, Menu, X } from 'lucide-react';
 import { Categoria } from '../models/produto.model';
 import { ProdutoAPI } from '../services/api/produto.api';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function Header() {
+  const router = useRouter();
+  const pathname = usePathname();
   const { quantidadeTotal } = useCarrinhoViewModel();
   const [menuAberto, setMenuAberto] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-
   const [clienteNome, setClienteNome] = useState<string | null>(null);
+  const [busca, setBusca] = useState('');
+  const [categoriaFiltro, setCategoriaFiltro] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sincroniza busca com a URL quando estiver na página /produtos
+  useEffect(() => {
+    if (pathname === '/produtos' && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setBusca(params.get('q') ?? '');
+      setCategoriaFiltro(params.get('categoria') ?? '');
+    }
+  }, [pathname]);
 
   useEffect(() => {
     ProdutoAPI.listarCategorias().then(setCategorias).catch(() => {});
@@ -24,6 +38,14 @@ export default function Header() {
       .then(d => d?.nome ? setClienteNome(d.nome.split(' ')[0]) : null)
       .catch(() => {});
   }, []);
+
+  const handleBuscar = useCallback(() => {
+    const q = busca.trim();
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (categoriaFiltro) params.set('categoria', categoriaFiltro);
+    router.push(`/produtos${params.toString() ? `?${params}` : ''}`);
+  }, [busca, categoriaFiltro, router]);
 
   return (
     <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
@@ -66,18 +88,29 @@ export default function Header() {
         {/* Search */}
         <div className="flex-1 min-w-0">
           <div className="flex w-full border-2 border-green-500 rounded-xl overflow-hidden focus-within:border-green-600 transition-colors">
-            <select className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm outline-none text-gray-600 font-medium hidden lg:block cursor-pointer">
+            <select
+              value={categoriaFiltro}
+              onChange={e => setCategoriaFiltro(e.target.value)}
+              className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm outline-none text-gray-600 font-medium hidden lg:block cursor-pointer"
+            >
               <option value="">Todas</option>
               {categorias.map(c => (
                 <option key={c.id} value={c.id}>{c.nome}</option>
               ))}
             </select>
             <input
+              ref={inputRef}
               type="text"
-              placeholder="Buscar..."
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleBuscar()}
+              placeholder="Buscar produtos..."
               className="flex-1 px-2 py-2 sm:px-3 sm:py-2.5 outline-none text-sm min-w-0"
             />
-            <button className="bg-green-600 hover:bg-green-700 transition-colors text-white px-2 sm:px-4 flex items-center gap-1.5 font-medium text-sm flex-shrink-0">
+            <button
+              onClick={handleBuscar}
+              className="bg-green-600 hover:bg-green-700 transition-colors text-white px-2 sm:px-4 flex items-center gap-1.5 font-medium text-sm flex-shrink-0"
+            >
               <Search size={16} />
               <span className="hidden sm:inline">Buscar</span>
             </button>

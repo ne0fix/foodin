@@ -19,6 +19,7 @@ export const ProdutoCreateSchema = z.object({
   quantidadePacote: z.string().min(1, 'A quantidade do pacote é obrigatória.'),
   categoriaId: z.string().min(1, 'A categoria é obrigatória.'),
   emEstoque: z.boolean().default(true),
+  estoqueQuantidade: z.number().int().min(-1).default(-1),
   tags: z.array(z.string()).default([]),
 });
 
@@ -30,6 +31,7 @@ export type ProdutoFormData = z.infer<typeof ProdutoCreateSchema>;
 // --- Estoque Schema ---
 export const EstoqueUpdateSchema = z.object({
   emEstoque: z.boolean(),
+  estoqueQuantidade: z.number().int().min(-1).optional(),
 });
 
 

@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import prisma from '@/src/lib/prisma';
 import { secaoToAdminDTO, produtoToDTO, PrismaSecaoCompleta } from '@/src/lib/dto';
 import { SecaoUpdateSchema } from '@/src/utils/validators';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 async function resolverPrevia(secao: PrismaSecaoCompleta) {
   if (secao.modoSelecao === 'MANUAL') {
@@ -31,7 +32,8 @@ const includeCompleto = {
 };
 
 // GET /api/admin/secoes/[id]
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     const secao = await prisma.secao.findUnique({ where: { id }, include: includeCompleto });
@@ -47,6 +49,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 // PUT /api/admin/secoes/[id]
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     const body = await req.json();
@@ -74,7 +77,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 // DELETE /api/admin/secoes/[id]
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
     await prisma.secao.delete({ where: { id } });

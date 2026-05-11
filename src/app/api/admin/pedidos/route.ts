@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { requireAdmin, unauthorizedResponse } from '@/src/lib/auth';
 
 // BRT = UTC-3 (Fortaleza não tem horário de verão)
 const BRT_OFFSET = 3 * 60 * 60 * 1000;
@@ -31,6 +32,7 @@ function buildDateFilter(data: string | undefined) {
 }
 
 export async function GET(req: NextRequest) {
+  if (!await requireAdmin(req)) return unauthorizedResponse();
   const url    = new URL(req.url);
   const page   = parseInt(url.searchParams.get('page') ?? '1');
   const status = url.searchParams.get('status') ?? undefined;
