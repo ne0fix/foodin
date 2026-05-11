@@ -93,22 +93,39 @@ export default function StepPagamento({
       {/* Resumo */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5">
         <h2 className="text-xl font-extrabold text-gray-900 mb-4">Resumo do pedido</h2>
-        <div className="space-y-2 text-sm text-gray-600">
-          {itens.map(i => (
-            <div key={i.produto.id} className="flex justify-between">
-              <span>{i.produto.nome} <span className="text-gray-400">×{i.quantidade}</span></span>
-              <span className="font-bold text-gray-900">{formatarMoeda(i.produto.preco * i.quantidade)}</span>
-            </div>
-          ))}
-          <div className="flex justify-between pt-2 border-t">
-            <span>Frete</span>
-            <span className="font-bold">
+        <div className="text-sm">
+          {/* Cabeçalho */}
+          <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 pb-2 border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+            <span>Produto</span>
+            <span className="text-center">Qtd</span>
+            <span className="text-right">Subtotal</span>
+          </div>
+
+          {/* Itens */}
+          <div className="divide-y divide-gray-50">
+            {itens.map(i => (
+              <div key={i.produto.id} className="grid grid-cols-[1fr_auto_auto] gap-x-3 items-center py-2">
+                <span className="text-gray-700 leading-snug">{i.produto.nome}</span>
+                <span className="text-xs font-semibold text-gray-400 text-center tabular-nums w-8">×{i.quantidade}</span>
+                <span className="font-bold text-gray-900 text-right tabular-nums whitespace-nowrap">
+                  {formatarMoeda(i.produto.preco * i.quantidade)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Frete */}
+          <div className="grid grid-cols-[1fr_auto] gap-x-3 items-center pt-2 mt-1 border-t border-gray-100">
+            <span className="text-gray-600">Frete</span>
+            <span className="font-bold text-right whitespace-nowrap">
               {frete === 0 ? <span className="text-green-600">Grátis</span> : formatarMoeda(frete)}
             </span>
           </div>
-          <div className="flex justify-between text-base font-extrabold text-gray-900 border-t pt-2 mt-1">
+
+          {/* Total */}
+          <div className="grid grid-cols-[1fr_auto] gap-x-3 items-center pt-2 mt-1 border-t border-gray-200 text-base font-extrabold text-gray-900">
             <span>Total</span>
-            <span className="text-green-600">{formatarMoeda(total)}</span>
+            <span className="text-green-600 text-right whitespace-nowrap">{formatarMoeda(total)}</span>
           </div>
         </div>
       </div>
