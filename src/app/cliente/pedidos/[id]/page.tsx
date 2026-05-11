@@ -105,7 +105,7 @@ export default function PedidoDetalhePage() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-5">
+    <div className="space-y-3 overflow-x-hidden w-full">
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -118,7 +118,7 @@ export default function PedidoDetalhePage() {
         </button>
         <div className="text-right">
           <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Pedido</p>
-          <p className="text-base font-black text-gray-900">#{pedido.numero}</p>
+          <p className="text-sm font-black text-gray-900">#{pedido.numero}</p>
         </div>
       </div>
 
@@ -238,51 +238,43 @@ export default function PedidoDetalhePage() {
       </section>
 
       {/* Pagamento e Entrega */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-        <details className="group bg-white rounded-xl border border-gray-100 overflow-hidden" open>
-          <summary className="p-3 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none min-h-[44px]">
-            <h3 className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider text-gray-500">
-              <CreditCard size={15} /> Pagamento
-            </h3>
-            <span className="transition-transform group-open:rotate-180 text-gray-400">
-              <svg fill="none" height="18" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="18"><path d="M6 9l6 6 6-6" /></svg>
-            </span>
-          </summary>
-          <div className="p-3 sm:p-5 pt-0 border-t border-gray-100 text-sm">
-            <p className="font-bold text-gray-900">{pedido.metodoPagamento}</p>
-            <p className="text-xs text-gray-500 mt-1">Processado via Mercado Pago</p>
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+            <CreditCard size={14} className="text-gray-400 flex-shrink-0" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Pagamento</h3>
           </div>
-        </details>
+          <div className="px-4 py-3">
+            <p className="text-sm font-bold text-gray-900">{pedido.metodoPagamento}</p>
+            <p className="text-xs text-gray-400 mt-0.5">Processado via Mercado Pago</p>
+          </div>
+        </div>
 
-        <details className="group bg-white rounded-xl border border-gray-100 overflow-hidden" open>
-          <summary className="p-3 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none min-h-[44px]">
-            <h3 className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider text-gray-500">
-              <MapPin size={15} /> Entrega
-            </h3>
-            <span className="transition-transform group-open:rotate-180 text-gray-400">
-              <svg fill="none" height="18" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="18"><path d="M6 9l6 6 6-6" /></svg>
-            </span>
-          </summary>
-          <div className="p-3 sm:p-5 pt-0 border-t border-gray-100 text-sm">
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+            <MapPin size={14} className="text-gray-400 flex-shrink-0" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Entrega</h3>
+          </div>
+          <div className="px-4 py-3">
             {pedido.entregaTipo === 'RETIRADA' ? (
-              <div className="space-y-1">
-                <p className="font-bold text-gray-900">Retirada em Loja</p>
-                <p className="text-xs text-gray-700">Av. XVII, 404 - Sen. Carlos Jereissati</p>
-                <p className="text-xs text-gray-700">Pacatuba - CE, 61800-000</p>
-                <p className="text-xs text-gray-700">(85) 99113-5449</p>
-                <p className="text-xs text-gray-500 mt-1">Aguarde o status &quot;Liberado&quot; para retirar</p>
+              <div className="space-y-0.5">
+                <p className="text-sm font-bold text-gray-900">Retirada em Loja</p>
+                <p className="text-xs text-gray-600">Av. XVII, 404 - Sen. Carlos Jereissati</p>
+                <p className="text-xs text-gray-600">Pacatuba - CE · CEP 61800-000</p>
+                <p className="text-xs text-gray-600">(85) 99113-5449</p>
+                <p className="text-xs text-gray-400 mt-1">Aguarde o status &quot;Liberado&quot; para retirar</p>
               </div>
             ) : (
-              <div className="text-gray-700 leading-relaxed text-sm">
-                <p className="font-bold text-gray-900">{pedido.endereco.logradouro}, {pedido.endereco.numero}</p>
-                <p>{pedido.endereco.bairro}</p>
-                <p>{pedido.endereco.cidade} - {pedido.endereco.uf}</p>
-                <p className="text-xs text-gray-500 mt-1">CEP: {pedido.endereco.cep}</p>
+              <div className="space-y-0.5">
+                <p className="text-sm font-bold text-gray-900 truncate">{pedido.endereco.logradouro}, {pedido.endereco.numero}</p>
+                <p className="text-xs text-gray-600">{pedido.endereco.bairro}</p>
+                <p className="text-xs text-gray-600">{pedido.endereco.cidade} - {pedido.endereco.uf}</p>
+                <p className="text-xs text-gray-400 mt-0.5">CEP: {pedido.endereco.cep}</p>
               </div>
             )}
           </div>
-        </details>
+        </div>
 
       </div>
 
