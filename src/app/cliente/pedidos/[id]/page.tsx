@@ -266,9 +266,12 @@ export default function PedidoDetalhePage() {
           </summary>
           <div className="p-3 sm:p-5 pt-0 border-t border-gray-100 text-sm">
             {pedido.entregaTipo === 'RETIRADA' ? (
-              <div>
+              <div className="space-y-1">
                 <p className="font-bold text-gray-900">Retirada em Loja</p>
-                <p className="text-xs text-gray-500 mt-1">Aguarde o status &quot;Liberado&quot;</p>
+                <p className="text-xs text-gray-700">Av. XVII, 404 - Sen. Carlos Jereissati</p>
+                <p className="text-xs text-gray-700">Pacatuba - CE, 61800-000</p>
+                <p className="text-xs text-gray-700">(85) 98105-8342</p>
+                <p className="text-xs text-gray-500 mt-1">Aguarde o status &quot;Liberado&quot; para retirar</p>
               </div>
             ) : (
               <div className="text-gray-700 leading-relaxed text-sm">

@@ -314,9 +314,10 @@ export default function StepDados({
         )}
 
         {tipoEntrega === 'RETIRADA' && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm">
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm space-y-1">
             <p className="font-bold text-green-800">📍 {process.env.NEXT_PUBLIC_LOJA_ENDERECO}</p>
-            <p className="text-green-700 mt-1">🕐 {process.env.NEXT_PUBLIC_LOJA_HORARIO}</p>
+            <p className="text-green-700">📞 {process.env.NEXT_PUBLIC_LOJA_TELEFONE}</p>
+            <p className="text-green-700">🕐 {process.env.NEXT_PUBLIC_LOJA_HORARIO}</p>
           </div>
         )}
       </div>
