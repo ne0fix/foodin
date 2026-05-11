@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Loader2, Printer, ArrowRight, X, Package,
   User, CreditCard, MapPin, ChevronLeft, ChevronRight, ShoppingBag, RotateCcw,
+  Mail, Phone, FileText, Truck, Store,
 } from 'lucide-react';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import { OrderTimeline } from '@/src/components/ui/OrderTimeline';
@@ -134,100 +135,143 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col">
 
-        {/* Header fixo */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-          <div>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pedido</p>
-            <h2 className="text-xl font-bold text-gray-900">#{pedidoId.slice(-8).toUpperCase()}</h2>
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-green-600/30">
+              <ShoppingBag size={18} className="text-white" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mb-0.5">Detalhes do pedido</p>
+              <h2 className="text-lg font-extrabold text-gray-900 leading-none">#{pedidoId.slice(-8).toUpperCase()}</h2>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={imprimirCupom}
               disabled={!pedido}
-              className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40"
+              className="hidden sm:flex items-center gap-1.5 h-9 px-3.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 hover:text-gray-900 rounded-xl text-xs font-bold transition-all disabled:opacity-40"
             >
-              <Printer size={14} /> Imprimir
+              <Printer size={13} /> Imprimir
             </button>
             <button
               onClick={onClose}
-              className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-xl transition-colors"
+              className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 rounded-xl transition-colors"
             >
-              <X size={17} />
+              <X size={16} />
             </button>
           </div>
         </div>
 
-        {/* Conteúdo scrollável */}
-        <div className="overflow-y-auto flex-1">
+        {/* ── Conteúdo scrollável ── */}
+        <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-4">
           {loading ? (
-            <div className="flex justify-center p-12">
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
               <Loader2 className="animate-spin text-green-600" size={28} />
+              <p className="text-sm text-gray-400 font-medium">Carregando pedido…</p>
             </div>
           ) : !pedido ? (
-            <p className="text-red-500 text-sm p-6">Erro ao carregar os detalhes do pedido.</p>
+            <div className="flex flex-col items-center gap-2 py-12">
+              <p className="text-sm font-semibold text-red-500">Erro ao carregar os detalhes do pedido.</p>
+            </div>
           ) : (
-            <div className="p-5 space-y-4">
-
-              {/* Grid: comprador + pagamento */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <>
+              {/* ── Grid: Comprador + Pagamento ── */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
                 {/* Comprador */}
-                <div className="bg-white rounded-xl border border-gray-100 p-4">
-                  <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-gray-50">
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                      <User size={14} className="text-blue-600" />
+                <div className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="flex items-center gap-2.5 px-4 py-3 bg-blue-50/60 border-b border-blue-100">
+                    <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+                      <User size={13} className="text-white" />
                     </div>
-                    <h3 className="text-sm font-bold text-gray-900">Comprador</h3>
-                  </div>
-                  <div className="space-y-1.5">
-                    <p className="text-sm font-semibold text-gray-900">{pedido.compradorNome}</p>
-                    <p className="text-xs text-gray-500">{pedido.compradorEmail}</p>
-                    <p className="text-xs text-gray-500">CPF: {pedido.compradorCpf}</p>
-                    <p className="text-xs text-gray-500">Tel: {pedido.compradorTelefone}</p>
+                    <h3 className="text-xs font-bold text-blue-900 uppercase tracking-wider">Comprador</h3>
                     {pedido.cliente && (
-                      <span className="inline-block mt-1 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                        Cliente cadastrado
+                      <span className="ml-auto text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                        Cadastrado
                       </span>
                     )}
                   </div>
+                  <div className="p-4 space-y-0">
+                    {/* Avatar + nome */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">
+                        {pedido.compradorNome?.charAt(0).toUpperCase()}
+                      </div>
+                      <p className="text-sm font-bold text-gray-900 leading-tight">{pedido.compradorNome}</p>
+                    </div>
+                    {/* Linhas de contato */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2.5">
+                        <Mail size={12} className="text-gray-400 flex-shrink-0" />
+                        <span className="text-xs text-gray-600 truncate">{pedido.compradorEmail}</span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <Phone size={12} className="text-gray-400 flex-shrink-0" />
+                        <span className="text-xs text-gray-600">{pedido.compradorTelefone}</span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <FileText size={12} className="text-gray-400 flex-shrink-0" />
+                        <span className="text-xs text-gray-600">CPF: {pedido.compradorCpf}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Pagamento e Entrega */}
-                <div className="bg-white rounded-xl border border-gray-100 p-4">
-                  <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-gray-50">
-                    <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                      <CreditCard size={14} className="text-green-600" />
+                {/* Pagamento & Entrega */}
+                <div className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="flex items-center gap-2.5 px-4 py-3 bg-green-50/60 border-b border-green-100">
+                    <div className="w-7 h-7 rounded-lg bg-green-600 flex items-center justify-center flex-shrink-0">
+                      <CreditCard size={13} className="text-white" />
                     </div>
-                    <h3 className="text-sm font-bold text-gray-900">Pagamento & Entrega</h3>
+                    <h3 className="text-xs font-bold text-green-900 uppercase tracking-wider">Pagamento & Entrega</h3>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Método</span>
-                      <span className="text-xs font-semibold text-gray-900">{pedido.metodoPagamento}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Status Pagamento</span>
+                  <div className="p-4 space-y-2.5">
+                    {[
+                      { label: 'Método', value: pedido.metodoPagamento },
+                      { label: 'Tipo', value: pedido.entregaTipo === 'RETIRADA' ? 'Retirada em loja' : 'Entrega em domicílio' },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-gray-500 flex-shrink-0">{label}</span>
+                        <span className="text-xs font-semibold text-gray-900 text-right">{value}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-gray-500 flex-shrink-0">Pagamento</span>
                       <PagBadge status={pedido.status} />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Status Pedido</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-gray-500 flex-shrink-0">Status</span>
                       <CliBadge status={pedido.statusCliente} />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Tipo Entrega</span>
-                      <span className="text-xs font-semibold text-gray-900">{pedido.entregaTipo}</span>
-                    </div>
-                    {pedido.entregaTipo === 'ENTREGA' && (
-                      <div className="mt-1 pt-2 border-t border-gray-50">
-                        <div className="flex items-start gap-1.5">
-                          <MapPin size={12} className="text-gray-400 mt-0.5 flex-shrink-0" />
+
+                    {/* Endereço de entrega */}
+                    {pedido.entregaTipo === 'ENTREGA' && pedido.logradouro && (
+                      <div className="mt-1 pt-2.5 border-t border-gray-100">
+                        <div className="flex items-start gap-2">
+                          <Truck size={12} className="text-gray-400 mt-0.5 flex-shrink-0" />
                           <p className="text-[11px] text-gray-500 leading-relaxed">
-                            {pedido.logradouro}, {pedido.numero}{pedido.complemento ? ` - ${pedido.complemento}` : ''}<br />
-                            {pedido.bairro}, {pedido.cidade} - {pedido.uf}<br />
-                            CEP: {pedido.cep}
+                            {pedido.logradouro}, {pedido.numero}
+                            {pedido.complemento ? ` — ${pedido.complemento}` : ''}<br />
+                            {pedido.bairro} · {pedido.cidade} - {pedido.uf}<br />
+                            CEP {pedido.cep}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Retirada em loja */}
+                    {pedido.entregaTipo === 'RETIRADA' && (
+                      <div className="mt-1 pt-2.5 border-t border-gray-100">
+                        <div className="flex items-start gap-2">
+                          <Store size={12} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                          <p className="text-[11px] text-gray-500 leading-relaxed">
+                            Av. XVII, 404 - Sen. Carlos Jereissati<br />
+                            Pacatuba - CE · CEP 61800-000<br />
+                            (85) 98105-8342
                           </p>
                         </div>
                       </div>
@@ -236,105 +280,121 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
                 </div>
               </div>
 
-              {/* Progresso */}
-              <div className="bg-white rounded-xl border border-gray-100 p-4">
-                <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-gray-50">
-                  <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
-                    <Package size={14} className="text-violet-600" />
+              {/* ── Progresso ── */}
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <div className="flex items-center gap-2.5 px-4 py-3 bg-violet-50/60 border-b border-violet-100">
+                  <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center flex-shrink-0">
+                    <Package size={13} className="text-white" />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900">Progresso do Pedido</h3>
+                  <h3 className="text-xs font-bold text-violet-900 uppercase tracking-wider">Progresso do Pedido</h3>
                 </div>
-                <OrderTimeline statusAtual={pedido.statusCliente ?? pedido.status} entregaTipo={pedido.entregaTipo} />
-                {(pedido.statusCliente === 'EM_SEPARACAO' || pedido.status === 'PAID') && (
-                  <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
-                    {/* Estorno — disponível para qualquer pedido PAID não cancelado */}
-                    {pedido.status === 'PAID' && pedido.statusCliente !== 'CANCELADO' && (
-                      confirmarEstorno ? (
-                        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
-                          <span className="text-xs font-semibold text-red-700">Confirmar estorno?</span>
-                          <button
-                            onClick={executarEstorno}
-                            disabled={estornando}
-                            className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"
-                          >
-                            {estornando ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
-                            Confirmar
-                          </button>
-                          <button
-                            onClick={() => setConfirmarEstorno(false)}
-                            className="text-xs font-semibold text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmarEstorno(true)}
-                          disabled={estornando}
-                          className="flex items-center gap-2 bg-white hover:bg-red-50 border border-red-200 text-red-600 font-bold px-4 py-2.5 rounded-xl text-sm transition-all hover:border-red-300"
-                        >
-                          <RotateCcw size={14} />
-                          Extornar Pagamento
-                        </button>
-                      )
-                    )}
+                <div className="p-4">
+                  <OrderTimeline statusAtual={pedido.statusCliente ?? pedido.status} entregaTipo={pedido.entregaTipo} />
 
-                    {/* Avançar status — só quando EM_SEPARACAO */}
-                    {pedido.statusCliente === 'EM_SEPARACAO' && (
-                      <button
-                        onClick={avancarStatus}
-                        disabled={avancando}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-green-600/25 hover:-translate-y-0.5"
-                      >
-                        {avancando ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
-                        {pedido.entregaTipo === 'RETIRADA' ? 'Marcar como Liberado para Retirada' : 'Marcar como Saiu para Entrega'}
-                      </button>
-                    )}
-                  </div>
-                )}
+                  {(pedido.statusCliente === 'EM_SEPARACAO' || pedido.status === 'PAID') && (
+                    <div className="mt-5 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-end gap-2.5">
+
+                      {/* Botão Extornar */}
+                      {pedido.status === 'PAID' && pedido.statusCliente !== 'CANCELADO' && (
+                        confirmarEstorno ? (
+                          <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 w-full sm:w-auto">
+                            <span className="text-xs font-bold text-red-700 flex-1">Confirmar estorno?</span>
+                            <button
+                              onClick={executarEstorno}
+                              disabled={estornando}
+                              className="flex items-center gap-1.5 h-8 px-3 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold rounded-lg text-xs transition-all"
+                            >
+                              {estornando ? <Loader2 size={11} className="animate-spin" /> : <RotateCcw size={11} />}
+                              Confirmar
+                            </button>
+                            <button
+                              onClick={() => setConfirmarEstorno(false)}
+                              className="h-8 px-3 text-xs font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmarEstorno(true)}
+                            disabled={estornando}
+                            className="flex items-center gap-2 h-10 px-4 bg-white hover:bg-red-50 border border-red-200 hover:border-red-300 text-red-600 font-bold rounded-xl text-sm transition-all"
+                          >
+                            <RotateCcw size={14} />
+                            Extornar Pagamento
+                          </button>
+                        )
+                      )}
+
+                      {/* Botão Avançar */}
+                      {pedido.statusCliente === 'EM_SEPARACAO' && (
+                        <button
+                          onClick={avancarStatus}
+                          disabled={avancando}
+                          className="flex items-center gap-2 h-10 px-5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-green-600/25 hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                          {avancando ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
+                          {pedido.entregaTipo === 'RETIRADA' ? 'Liberar para Retirada' : 'Saiu para Entrega'}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Itens */}
-              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
-                  <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-                    <ShoppingBag size={14} className="text-orange-500" />
+              {/* ── Itens ── */}
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <div className="flex items-center gap-2.5 px-4 py-3 bg-orange-50/60 border-b border-orange-100">
+                  <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                    <ShoppingBag size={13} className="text-white" />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900">Itens do Pedido</h3>
+                  <h3 className="text-xs font-bold text-orange-900 uppercase tracking-wider">Itens do Pedido</h3>
                 </div>
-                <div className="divide-y divide-gray-50">
+                <div className="divide-y divide-gray-100">
                   {pedido.items?.map((item: any) => (
-                    <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/60 transition-colors">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                        {item.imagemProduto && (
-                          <img src={item.imagemProduto} alt={item.nomeProduto} className="w-full h-full object-contain p-1" />
-                        )}
+                    <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 transition-colors">
+                      <div className="w-11 h-11 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 border border-gray-200 flex items-center justify-center">
+                        {item.imagemProduto
+                          ? <img src={item.imagemProduto} alt={item.nomeProduto} className="w-full h-full object-contain p-1" />
+                          : <ShoppingBag size={16} className="text-gray-300" />
+                        }
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{item.nomeProduto}</p>
-                        <p className="text-xs text-gray-400">{item.quantidade}× {formatarMoeda(item.preco)}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{item.quantidade}× {formatarMoeda(item.preco)}</p>
                       </div>
-                      <p className="text-sm font-bold text-gray-900 flex-shrink-0">{formatarMoeda(item.subtotal)}</p>
+                      <p className="text-sm font-bold text-gray-900 flex-shrink-0 tabular-nums">{formatarMoeda(item.subtotal)}</p>
                     </div>
                   ))}
                 </div>
-                <div className="bg-gray-50/60 px-4 py-3 space-y-1.5">
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>Subtotal</span>
-                    <span>{formatarMoeda(pedido.subtotal)}</span>
+
+                {/* Totais */}
+                <div className="px-4 py-4 bg-gray-50/70 border-t border-gray-200 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">Subtotal</span>
+                    <span className="text-xs font-semibold text-gray-700 tabular-nums">{formatarMoeda(pedido.subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>Frete</span>
-                    <span>{pedido.frete === 0 ? 'Grátis' : formatarMoeda(pedido.frete)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">Frete</span>
+                    <span className={`text-xs font-semibold tabular-nums ${pedido.frete === 0 ? 'text-green-600' : 'text-gray-700'}`}>
+                      {pedido.frete === 0 ? 'Grátis' : formatarMoeda(pedido.frete)}
+                    </span>
                   </div>
-                  <div className="flex justify-between text-base font-bold text-gray-900 pt-1.5 border-t border-gray-200">
-                    <span>Total</span>
-                    <span className="text-green-600">{formatarMoeda(pedido.total)}</span>
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                    <span className="text-sm font-bold text-gray-900">Total</span>
+                    <span className="text-base font-extrabold text-green-600 tabular-nums">{formatarMoeda(pedido.total)}</span>
                   </div>
                 </div>
               </div>
 
-            </div>
+              {/* Botão imprimir mobile */}
+              <button
+                onClick={imprimirCupom}
+                className="sm:hidden w-full flex items-center justify-center gap-2 h-11 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-xl text-sm font-bold transition-colors"
+              >
+                <Printer size={15} /> Imprimir Cupom
+              </button>
+            </>
           )}
         </div>
       </div>
