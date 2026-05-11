@@ -43,6 +43,8 @@ export interface SecaoHomeDTO {
 export interface ProdutoAdminDTO extends ProdutoPublicoDTO {
   ativo: boolean;
   categoriaId: string;
+  estoqueQuantidade: number;
+  vendidos: number;
   criadoEm: string;
   atualizadoEm: string;
 }
@@ -146,12 +148,14 @@ export function secaoToAdminDTO(
  * @param produto The complete Prisma product object.
  * @returns An admin product DTO with additional fields.
  */
-export function produtoToAdminDTO(produto: PrismaProdutoCompleto): ProdutoAdminDTO {
+export function produtoToAdminDTO(produto: PrismaProdutoCompleto, vendidos = 0): ProdutoAdminDTO {
   const publicDTO = produtoToDTO(produto);
   return {
     ...publicDTO,
     ativo: produto.ativo,
     categoriaId: produto.categoriaId,
+    estoqueQuantidade: produto.estoqueQuantidade,
+    vendidos,
     criadoEm: produto.criadoEm.toISOString(),
     atualizadoEm: produto.atualizadoEm.toISOString(),
   };

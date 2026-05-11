@@ -17,9 +17,16 @@ export async function GET(
   if (!await requireAdmin(req)) return unauthorizedResponse();
   try {
     const { id } = await params;
-    const produto = await prisma.produto.findUnique({ where: { id }, include: includeCompleto });
+    const [produto, vendidosData] = await Promise.all([
+      prisma.produto.findUnique({ where: { id }, include: includeCompleto }),
+      prisma.orderItem.aggregate({
+        where: { produtoId: id, order: { status: 'PAID' } },
+        _sum: { quantidade: true },
+      }),
+    ]);
     if (!produto) return new NextResponse('Produto não encontrado', { status: 404 });
-    return NextResponse.json(produtoToAdminDTO(produto));
+    const vendidos = vendidosData._sum.quantidade ?? 0;
+    return NextResponse.json(produtoToAdminDTO(produto, vendidos));
   } catch (error) {
     console.error('Erro ao buscar produto:', error);
     return new NextResponse('Internal Server Error', { status: 500 });

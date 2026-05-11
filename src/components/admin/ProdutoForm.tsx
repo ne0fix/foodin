@@ -118,6 +118,20 @@ export default function ProdutoForm({ defaultValues, onSubmit, isSubmitting }: P
               className={input} />
             {errors.precoOriginal && <p className={err}>{errors.precoOriginal.message}</p>}
           </div>
+          <div>
+            <label className={label}>Quantidade em estoque</label>
+            <p className="text-xs text-gray-400 mb-1">
+              Use <strong>-1</strong> para ilimitado (sem rastreamento). Número positivo ativa o controle automático.
+            </p>
+            <input
+              type="number"
+              min="-1"
+              step="1"
+              {...register('estoqueQuantidade', { valueAsNumber: true })}
+              className={input}
+            />
+            {errors.estoqueQuantidade && <p className={err}>{errors.estoqueQuantidade.message}</p>}
+          </div>
           <div className="sm:col-span-2">
             <Controller name="emEstoque" control={control}
               render={({ field }) => (

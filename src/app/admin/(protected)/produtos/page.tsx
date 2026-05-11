@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useDebounce } from 'use-debounce';
 import Link from 'next/link';
-import { PlusCircle, Edit, Trash2, Loader2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Loader2, Check, X, Pencil, ShoppingBag, Package } from 'lucide-react';
 import { AdminTableSkeleton } from '@/src/components/ui/Skeleton';
 import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
 import { ProdutoAdminDTO } from '@/src/lib/dto';
@@ -14,6 +14,137 @@ import Badge from '@/src/components/admin/ui/Badge';
 import Toggle from '@/src/components/admin/ui/Toggle';
 import ConfirmDialog from '@/src/components/admin/ui/ConfirmDialog';
 import { formatarMoeda } from '@/src/utils/formatadores';
+
+// ─── Célula de estoque com edição inline e barra de progresso ────────────────
+function CelulaEstoque({
+  produto,
+  onToggle,
+  onQtdAtualizada,
+}: {
+  produto: ProdutoAdminDTO;
+  onToggle: (id: string, emEstoque: boolean) => void;
+  onQtdAtualizada: (id: string, novaQtd: number) => void;
+}) {
+  const [editando, setEditando] = useState(false);
+  const [qtdInput, setQtdInput] = useState(String(produto.estoqueQuantidade));
+  const [salvando, setSalvando] = useState(false);
+
+  const rastreado = produto.estoqueQuantidade >= 0;
+  const totalOriginal = rastreado ? produto.estoqueQuantidade + produto.vendidos : 0;
+  const porcentagemVendida = totalOriginal > 0 ? Math.min((produto.vendidos / totalOriginal) * 100, 100) : 0;
+  const semEstoque = rastreado && produto.estoqueQuantidade === 0;
+
+  const salvar = async () => {
+    const novaQtd = parseInt(qtdInput);
+    if (isNaN(novaQtd) || novaQtd < -1) return;
+    setSalvando(true);
+    try {
+      await fetch(`/api/admin/produtos/${produto.id}/estoque`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emEstoque: produto.emEstoque, estoqueQuantidade: novaQtd }),
+      });
+      onQtdAtualizada(produto.id, novaQtd);
+      setEditando(false);
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2 min-w-[160px]">
+      {/* Toggle disponibilidade */}
+      <Toggle
+        label=""
+        checked={produto.emEstoque}
+        onChange={(checked) => onToggle(produto.id, checked)}
+      />
+
+      {/* Dados de quantidade */}
+      {rastreado ? (
+        <div className="space-y-1">
+          {/* Quantidade atual com edição */}
+          {editando ? (
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min="-1"
+                value={qtdInput}
+                onChange={e => setQtdInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') salvar(); if (e.key === 'Escape') setEditando(false); }}
+                className="w-20 border border-gray-300 rounded px-1.5 py-0.5 text-xs outline-none focus:border-green-500"
+                autoFocus
+              />
+              <button onClick={salvar} disabled={salvando}
+                className="text-green-600 hover:text-green-700 disabled:opacity-50">
+                <Check size={13} />
+              </button>
+              <button onClick={() => setEditando(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={13} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setQtdInput(String(produto.estoqueQuantidade)); setEditando(true); }}
+              className="flex items-center gap-1 group"
+            >
+              <Package size={12} className={semEstoque ? 'text-red-400' : 'text-gray-400'} />
+              <span className={`text-xs font-bold ${semEstoque ? 'text-red-500' : 'text-gray-700'}`}>
+                {produto.estoqueQuantidade} un
+              </span>
+              <Pencil size={10} className="text-gray-300 group-hover:text-green-500 transition-colors" />
+            </button>
+          )}
+
+          {/* Barra de progresso vendidos / total */}
+          {totalOriginal > 0 && (
+            <div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className={`h-1.5 rounded-full transition-all ${
+                    porcentagemVendida >= 90 ? 'bg-red-400' :
+                    porcentagemVendida >= 60 ? 'bg-amber-400' : 'bg-green-500'
+                  }`}
+                  style={{ width: `${porcentagemVendida}%` }}
+                />
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <ShoppingBag size={10} className="text-gray-400" />
+                <span className="text-[10px] text-gray-400">
+                  {produto.vendidos} vendido{produto.vendidos !== 1 ? 's' : ''} de {totalOriginal}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {totalOriginal === 0 && produto.vendidos > 0 && (
+            <div className="flex items-center gap-1">
+              <ShoppingBag size={10} className="text-gray-400" />
+              <span className="text-[10px] text-gray-400">{produto.vendidos} vendido{produto.vendidos !== 1 ? 's' : ''}</span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-0.5">
+          <button
+            onClick={() => { setQtdInput('0'); setEditando(true); }}
+            className="flex items-center gap-1 group text-xs text-gray-400 hover:text-green-600 transition-colors"
+          >
+            <Package size={11} />
+            <span>Ilimitado</span>
+            <Pencil size={10} className="text-gray-300 group-hover:text-green-500 transition-colors" />
+          </button>
+          {produto.vendidos > 0 && (
+            <div className="flex items-center gap-1">
+              <ShoppingBag size={10} className="text-gray-400" />
+              <span className="text-[10px] text-gray-400">{produto.vendidos} vendido{produto.vendidos !== 1 ? 's' : ''}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function PageFilters() {
   const router = useRouter();
@@ -105,6 +236,12 @@ function ProdutosContent() {
     setProdutos((ps) => ps.map((p) => (p.id === id ? { ...p, emEstoque } : p)));
   }
 
+  function atualizarQtdLocal(id: string, novaQtd: number) {
+    setProdutos((ps) => ps.map((p) =>
+      p.id === id ? { ...p, estoqueQuantidade: novaQtd, emEstoque: novaQtd !== 0 ? p.emEstoque : false } : p
+    ));
+  }
+
   async function handleExcluir() {
     if (!excluindo) return;
     await fetch(`/api/admin/produtos/${excluindo.id}`, { method: 'DELETE' });
@@ -158,8 +295,12 @@ function ProdutosContent() {
     {
       header: 'Estoque',
       accessor: 'emEstoque',
-      cell: (value, row) => (
-        <Toggle label="" checked={value as boolean} onChange={(checked) => toggleEstoque(row.id, checked)} />
+      cell: (_, row) => (
+        <CelulaEstoque
+          produto={row}
+          onToggle={toggleEstoque}
+          onQtdAtualizada={atualizarQtdLocal}
+        />
       ),
     },
     {

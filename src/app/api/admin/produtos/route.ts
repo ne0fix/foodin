@@ -43,7 +43,18 @@ export async function GET(request: NextRequest) {
         prisma.produto.count({ where }),
     ]);
 
-    const produtosDTO = produtos.map(produtoToAdminDTO);
+    // Calcular total vendido por produto (pedidos PAID) em uma única query
+    const produtoIds = produtos.map(p => p.id);
+    const vendidosData = produtoIds.length > 0
+      ? await prisma.orderItem.groupBy({
+          by: ['produtoId'],
+          where: { produtoId: { in: produtoIds }, order: { status: 'PAID' } },
+          _sum: { quantidade: true },
+        })
+      : [];
+    const vendidosMap = new Map(vendidosData.map(v => [v.produtoId, v._sum.quantidade ?? 0]));
+
+    const produtosDTO = produtos.map(p => produtoToAdminDTO(p, vendidosMap.get(p.id) ?? 0));
 
     return NextResponse.json({
       data: produtosDTO,
