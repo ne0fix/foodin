@@ -7,12 +7,11 @@ import { formatarMoeda } from '@/src/utils/formatadores';
 import {
   Package, AlertTriangle, Tag, LayoutList,
   ExternalLink, Plus, Settings2, TrendingUp,
-  ArrowUpRight,
+  ArrowUpRight, ShoppingBag,
 } from 'lucide-react';
 
 async function getDashboardData() {
-  // Uma única query SQL consolida as 4 contagens — usa só 1 conexão do pool
-  const [metricas, ultimosProdutos] = await Promise.all([
+  const [metricas, ultimosProdutos, vendasRaw] = await Promise.all([
     prisma.$queryRaw<{ total_produtos: bigint; sem_estoque: bigint; total_categorias: bigint; total_secoes: bigint }[]>`
       SELECT
         (SELECT COUNT(*) FROM "Produto"  WHERE ativo = true)               AS total_produtos,
@@ -26,6 +25,24 @@ async function getDashboardData() {
       take: 5,
       include: { categoria: true },
     }),
+    prisma.$queryRaw<{
+      hoje_total: string; hoje_pedidos: bigint;
+      semana_total: string; semana_pedidos: bigint;
+      quinzena_total: string; quinzena_pedidos: bigint;
+      mes_total: string; mes_pedidos: bigint;
+    }[]>`
+      SELECT
+        COALESCE(SUM(CASE WHEN "criadoEm" >= date_trunc('day', NOW()) THEN total END), 0)::text            AS hoje_total,
+        COUNT(CASE WHEN "criadoEm" >= date_trunc('day', NOW()) THEN 1 END)                                 AS hoje_pedidos,
+        COALESCE(SUM(CASE WHEN "criadoEm" >= NOW() - INTERVAL '7 days' THEN total END), 0)::text           AS semana_total,
+        COUNT(CASE WHEN "criadoEm" >= NOW() - INTERVAL '7 days' THEN 1 END)                               AS semana_pedidos,
+        COALESCE(SUM(CASE WHEN "criadoEm" >= NOW() - INTERVAL '15 days' THEN total END), 0)::text          AS quinzena_total,
+        COUNT(CASE WHEN "criadoEm" >= NOW() - INTERVAL '15 days' THEN 1 END)                              AS quinzena_pedidos,
+        COALESCE(SUM(CASE WHEN "criadoEm" >= date_trunc('month', NOW()) THEN total END), 0)::text          AS mes_total,
+        COUNT(CASE WHEN "criadoEm" >= date_trunc('month', NOW()) THEN 1 END)                               AS mes_pedidos
+      FROM "Order"
+      WHERE status IN ('PAID', 'PROCESSING')
+    `,
   ]);
 
   const m = metricas[0];
@@ -34,11 +51,19 @@ async function getDashboardData() {
   const totalCategorias    = Number(m.total_categorias);
   const totalSecoes        = Number(m.total_secoes);
 
-  return { totalProdutos, produtosSemEstoque, totalCategorias, totalSecoes, ultimosProdutos };
+  const v = vendasRaw[0];
+  const vendas = {
+    hoje:     { total: parseFloat(v.hoje_total),     pedidos: Number(v.hoje_pedidos) },
+    semana:   { total: parseFloat(v.semana_total),   pedidos: Number(v.semana_pedidos) },
+    quinzena: { total: parseFloat(v.quinzena_total), pedidos: Number(v.quinzena_pedidos) },
+    mes:      { total: parseFloat(v.mes_total),      pedidos: Number(v.mes_pedidos) },
+  };
+
+  return { totalProdutos, produtosSemEstoque, totalCategorias, totalSecoes, ultimosProdutos, vendas };
 }
 
 export default async function DashboardPage() {
-  const { totalProdutos, produtosSemEstoque, totalCategorias, totalSecoes, ultimosProdutos } =
+  const { totalProdutos, produtosSemEstoque, totalCategorias, totalSecoes, ultimosProdutos, vendas } =
     await getDashboardData();
 
   const metricas = [
@@ -120,6 +145,54 @@ export default async function DashboardPage() {
             </div>
           );
         })}
+      </div>
+
+      {/* Relatório de Vendas */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center">
+              <ShoppingBag size={15} className="text-green-600" />
+            </div>
+            <div>
+              <h2 className="font-bold text-gray-900 leading-none">Relatório de Vendas</h2>
+              <p className="text-[11px] text-gray-400 mt-0.5">Pedidos pagos e em processamento</p>
+            </div>
+          </div>
+          <Link
+            href="/admin/pedidos"
+            className="text-xs font-semibold text-green-600 hover:text-green-700 flex items-center gap-1"
+          >
+            Ver pedidos <ArrowUpRight size={13} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-gray-50"
+             style={{ borderTop: 0 }}>
+          {([
+            { label: 'Hoje',           periodo: vendas.hoje },
+            { label: 'Esta Semana',    periodo: vendas.semana },
+            { label: 'Últimos 15 dias',periodo: vendas.quinzena },
+            { label: 'Este Mês',       periodo: vendas.mes },
+          ] as const).map(({ label, periodo }, idx) => (
+            <div
+              key={label}
+              className={`p-5 ${idx % 2 === 0 && idx < 2 ? 'border-b border-gray-50' : ''} ${idx < 3 ? 'border-r border-gray-50' : ''} ${idx === 1 ? 'border-b border-gray-50 lg:border-b-0' : ''}`}
+            >
+              <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">{label}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-2 tabular-nums">
+                {formatarMoeda(periodo.total)}
+              </p>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">
+                  {periodo.pedidos}
+                </span>
+                <p className="text-xs text-gray-400">
+                  pedido{periodo.pedidos !== 1 ? 's' : ''}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Conteúdo principal */}
