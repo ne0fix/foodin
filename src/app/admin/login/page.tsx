@@ -5,8 +5,104 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Mail, Lock, AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Loader2, ShieldCheck, Printer } from 'lucide-react';
 import { LoginSchema, LoginFormData } from '@/src/utils/validators';
+
+function imprimirTeste() {
+  const w = window.open('', '_blank', 'width=320,height=800');
+  if (!w) return;
+  const agora = new Date().toLocaleString('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  w.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Cupom TESTE</title>
+  <style>
+    @page { size: 80mm auto; margin: 4mm 3mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', Courier, monospace; font-size: 11px; width: 72mm; color: #000; line-height: 1.45; }
+    .center   { text-align: center; }
+    .right    { text-align: right; }
+    .bold     { font-weight: bold; }
+    .big      { font-size: 14px; font-weight: bold; }
+    .small    { font-size: 9px; }
+    .sep      { border-bottom: 1px dotted #000; margin: 5px 0; }
+    .row      { display: flex; justify-content: space-between; align-items: baseline; }
+    .indent   { padding-left: 8px; color: #333; }
+    .item-nome{ font-weight: bold; margin-top: 5px; }
+    .section-title { font-weight: bold; font-size: 10px; letter-spacing: 0.5px; margin-top: 6px; }
+    .total-box { border: 1px solid #000; padding: 4px 6px; margin: 6px 0; }
+    .total-valor { font-size: 15px; font-weight: bold; }
+    .obs { font-size: 9px; color: #444; margin-top: 3px; font-style: italic; }
+    .rodape { font-size: 9px; text-align: center; margin-top: 8px; color: #333; }
+    @media print { body { width: 72mm; } }
+  </style>
+</head>
+<body>
+  <div class="center">
+    <div class="big">SUPERMERCADO G&amp;N</div>
+    <div class="small">CNPJ: 08.143.625/0001-14</div>
+    <div class="small">Av. XVII, 404 - Sen. Carlos Jereissati</div>
+    <div class="small">Pacatuba - CE &nbsp; CEP: 61800-000</div>
+    <div class="small">Tel: (85) 99113-5449</div>
+  </div>
+  <div class="sep" style="margin-top:6px"></div>
+  <div class="center bold" style="font-size:12px; letter-spacing:1px;">*** CUPOM DE TESTE ***</div>
+  <div class="sep"></div>
+  <div class="row"><span class="bold">Pedido Nº:</span><span class="bold">#TESTE001</span></div>
+  <div class="row"><span>Data/Hora:</span><span>${agora}</span></div>
+  <div class="sep"></div>
+  <div class="section-title">DADOS DO CLIENTE</div>
+  <div class="sep"></div>
+  <div class="row"><span>Nome:</span><span>João Silva Teste</span></div>
+  <div class="row"><span>CPF:</span><span>071.***.***-79</span></div>
+  <div class="row"><span>Tel:</span><span>(85) 99113-5449</span></div>
+  <div class="sep"></div>
+  <div class="section-title">ITENS DO PEDIDO</div>
+  <div class="sep"></div>
+  <div class="item-nome">Arroz Branco 5kg</div>
+  <div class="row"><span class="indent">2 x R$ 24,90</span><span>R$ 49,80</span></div>
+  <div class="item-nome">Feijao Carioca 1kg</div>
+  <div class="row"><span class="indent">1 x R$ 8,99</span><span>R$ 8,99</span></div>
+  <div class="item-nome">Oleo de Soja 900ml</div>
+  <div class="row"><span class="indent">3 x R$ 6,50</span><span>R$ 19,50</span></div>
+  <div class="item-nome">Acucar Cristal 1kg</div>
+  <div class="row"><span class="indent">2 x R$ 4,75</span><span>R$ 9,50</span></div>
+  <div class="sep"></div>
+  <div class="row"><span>Subtotal:</span><span>R$ 87,79</span></div>
+  <div class="row"><span>Frete:</span><span>GRATIS</span></div>
+  <div class="sep"></div>
+  <div class="total-box">
+    <div class="row">
+      <span class="bold" style="font-size:13px;">TOTAL</span>
+      <span class="total-valor">R$ 87,79</span>
+    </div>
+  </div>
+  <div class="section-title">FORMA DE PAGAMENTO</div>
+  <div class="sep"></div>
+  <div class="row"><span>Metodo:</span><span class="bold">PIX</span></div>
+  <div class="row"><span>Status Pag.:</span><span class="bold">PAGO</span></div>
+  <div class="sep"></div>
+  <div class="section-title">ENDERECO DE ENTREGA</div>
+  <div class="sep"></div>
+  <div>Rua das Flores, 123 - Apto 45</div>
+  <div>Centro</div>
+  <div>Pacatuba - CE &nbsp; CEP: 61800-000</div>
+  <div class="sep" style="margin-top:8px"></div>
+  <div class="rodape">
+    <div>Obrigado pela preferencia!</div>
+    <div>Volte sempre ao Supermercado G&amp;N</div>
+    <div style="margin-top:4px;">www.digitalgen.vercel.app</div>
+    <div style="margin-top:6px; font-size:8px;">Documento emitido em ${agora}</div>
+  </div>
+  <script>window.onload = function(){ window.print(); setTimeout(function(){ window.close(); }, 1000); };</script>
+</body>
+</html>`);
+  w.document.close();
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -69,7 +165,15 @@ export default function LoginPage() {
       </div>
 
       {/* Painel direito — formulário */}
-      <div className="flex-1 flex items-center justify-center bg-gray-50 p-8">
+      <div className="flex-1 flex items-center justify-center bg-gray-50 p-8 relative">
+        <button
+          type="button"
+          onClick={imprimirTeste}
+          title="Testar impressão de cupom"
+          className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300 hover:shadow-sm transition-all"
+        >
+          <Printer size={17} />
+        </button>
         <div className="w-full max-w-md">
           {/* Logo mobile */}
           <div className="lg:hidden flex justify-center mb-8">

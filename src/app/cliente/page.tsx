@@ -63,26 +63,33 @@ export default function DashboardPage() {
 
       {/* ─── KPIs ── */}
       <div className="grid grid-cols-2 gap-3">
-        {[
-          { label: 'Total de pedidos', value: carregando ? '—' : String(total),                                   icon: Package,    color: 'text-blue-600',   bg: 'bg-blue-50'   },
-          { label: 'Último status',    value: carregando ? '—' : (pedidos[0]?.statusCliente ?? 'Nenhum'),         icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50', badge: true },
-        ].map(({ label, value, icon: Icon, color, bg, badge }) => (
-          <div key={label} className="bg-white rounded-2xl border border-gray-100 px-4 py-4 flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
-              <Icon size={18} className={color} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-gray-400 font-medium">{label}</p>
-              {badge && value !== '—' && value !== 'Nenhum' ? (
-                <div className="mt-1"><StatusBadge status={value} /></div>
-              ) : (
-                <p className="text-lg font-black text-gray-900 mt-0.5 truncate">
-                  {value === 'Nenhum' ? '—' : value}
-                </p>
-              )}
-            </div>
+        {/* Total de pedidos */}
+        <div className="bg-white rounded-2xl border border-gray-100 px-4 py-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <Package size={18} className="text-blue-600" />
           </div>
-        ))}
+          <div className="flex-1">
+            <p className="text-xs text-gray-400 font-medium">Total de pedidos</p>
+            <p className="text-2xl font-black text-gray-900 mt-1 text-center">
+              {carregando ? '—' : String(total)}
+            </p>
+          </div>
+        </div>
+
+        {/* Último status */}
+        <div className="bg-white rounded-2xl border border-gray-100 px-4 py-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+            <TrendingUp size={18} className="text-purple-600" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-400 font-medium">Último status</p>
+            {!carregando && pedidos[0]?.statusCliente ? (
+              <div className="mt-1"><StatusBadge status={pedidos[0].statusCliente} /></div>
+            ) : (
+              <p className="text-lg font-black text-gray-900 mt-0.5">—</p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* ─── Pedidos recentes ── */}
