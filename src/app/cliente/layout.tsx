@@ -185,8 +185,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         )}
 
         {/* Conteúdo */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 overflow-x-hidden">
-          <div className="max-w-5xl mx-auto w-full">
+        <main className="flex-1 pb-24 lg:pb-8 overflow-hidden">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 w-full">
             {children}
           </div>
         </main>
