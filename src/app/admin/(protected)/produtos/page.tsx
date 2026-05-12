@@ -266,7 +266,7 @@ function ProdutosContent() {
               src={row.imagem}
               alt={row.nome}
               className="w-full h-full object-contain p-0.5"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/gn2.png'; }}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/foodin.png'; }}
             />
           </div>
           <Link href={`/admin/produtos/${row.id}`} className="font-medium text-sm text-gray-900 hover:text-green-700 line-clamp-2">

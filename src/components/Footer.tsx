@@ -14,8 +14,8 @@ export default function Footer() {
           <div className="col-span-2 lg:col-span-1">
             <div className="mb-2">
               <Image
-                src="/gn2.png"
-                alt="Ekomart"
+                src="/foodin.png"
+                alt="foodin"
                 width={499}
                 height={241}
                 className="h-10 mb-5 sm:h-12 w-auto drop-shadow-lg"

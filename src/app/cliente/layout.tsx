@@ -67,7 +67,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-gray-100">
           <Link href="/">
-            <Image src="/gn2.png" alt="Ekomart" width={120} height={48} className="h-8 w-auto" />
+            <Image src="/foodin.png" alt="foodin" width={120} height={48} className="h-8 w-auto" />
           </Link>
         </div>
 
@@ -134,7 +134,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         {/* Top bar mobile */}
         <header className="lg:hidden bg-white border-b border-gray-100 h-14 flex items-center justify-between px-4 sticky top-0 z-20">
           <Link href="/">
-            <Image src="/gn2.png" alt="Ekomart" width={100} height={40} className="h-7 w-auto" />
+            <Image src="/foodin.png" alt="foodin" width={100} height={40} className="h-7 w-auto" />
           </Link>
           <button onClick={() => setMenuAberto(true)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-xl">
             <Menu size={22} />

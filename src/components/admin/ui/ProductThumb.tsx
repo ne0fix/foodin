@@ -13,7 +13,7 @@ export default function ProductThumb({ src, alt, className = '' }: Props) {
       alt={alt}
       className={className}
       onError={(e) => {
-        (e.currentTarget as HTMLImageElement).src = '/gn2.png';
+        (e.currentTarget as HTMLImageElement).src = '/foodin.png';
       }}
     />
   );

@@ -30,7 +30,7 @@ export default function AdminSidebar() {
       {/* Logo */}
       <div className="h-16 flex items-center justify-center border-b border-gray-100">
         <Link href="/admin/dashboard">
-          <Image src="/gn2.png" alt="G&N" width={100} height={48} style={{ height: 'auto' }} />
+          <Image src="/foodin.png" alt="foodin" width={100} height={48} style={{ height: 'auto' }} />
         </Link>
       </div>
 

@@ -76,7 +76,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="hidden sm:flex items-center flex-shrink-0 mr-5">
           <Image
-            src="/gn2.png"
+            src="/foodin.png"
             alt="foodin"
             width={499}
             height={241}

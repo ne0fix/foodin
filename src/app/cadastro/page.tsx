@@ -110,7 +110,7 @@ export default function CadastroPage() {
         </div>
         <div className="relative z-10 flex flex-col h-full p-12">
           <Link href="/">
-            <Image src="/gn2.png" alt="Ekomart" width={140} height={56} className="h-10 w-auto brightness-200" />
+            <Image src="/foodin.png" alt="foodin" width={140} height={56} className="h-10 w-auto brightness-200" />
           </Link>
           <div className="flex-1 flex flex-col justify-center space-y-8">
             <div>
@@ -168,7 +168,7 @@ export default function CadastroPage() {
 
             <div>
               <Link href="/" className="hidden lg:block mb-8">
-                <Image src="/gn2.png" alt="Ekomart" width={120} height={48} className="h-9 w-auto" />
+                <Image src="/foodin.png" alt="foodin" width={120} height={48} className="h-9 w-auto" />
               </Link>
               <h1 className="text-2xl font-black text-gray-900">{STEPS[step]}</h1>
               <p className="text-gray-500 text-sm mt-1">

@@ -30,7 +30,7 @@ export default function HomePage() {
         <div className="relative z-10 container mx-auto px-4 max-w-7xl pt-4 pb-16 sm:py-16">
           <div className="max-w-xl">
             <Image
-              src="/gn2.png"
+              src="/foodin.png"
               alt="foodin"
               width={499}
               height={241}

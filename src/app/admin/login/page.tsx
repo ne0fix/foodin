@@ -140,7 +140,7 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-1/4 w-48 h-48 bg-green-500/10 rounded-full blur-2xl" />
 
         <div className="relative z-10">
-          <Image src="/gn2.png" alt="Ekomart" width={160} height={76} style={{ height: 'auto' }} className="drop-shadow-lg" />
+          <Image src="/foodin.png" alt="foodin" width={160} height={76} style={{ height: 'auto' }} className="drop-shadow-lg" />
         </div>
 
         <div className="relative z-10 space-y-6">
@@ -177,7 +177,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Logo mobile */}
           <div className="lg:hidden flex justify-center mb-8">
-            <Image src="/gn2.png" alt="Ekomart" width={140} height={67} style={{ height: 'auto' }} />
+            <Image src="/foodin.png" alt="foodin" width={140} height={67} style={{ height: 'auto' }} />
           </div>
 
           <div className="mb-8">

@@ -110,8 +110,8 @@ function LoginContent() {
           <div className="px-7 pt-7 pb-5 flex justify-center">
             <Link href="/">
               <Image
-                src="/gn2.png"
-                alt="Ekomart"
+                src="/foodin.png"
+                alt="foodin"
                 width={160}
                 height={64}
                 className="h-12 w-auto"
