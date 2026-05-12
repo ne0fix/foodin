@@ -236,6 +236,7 @@ export default function StepDados({
       {/* Entrega */}
       <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
         <h2 className="text-xl font-extrabold text-gray-900">Entrega</h2>
+        <p className="text-xs text-gray-500">Informe onde entregar seu pedido</p>
 
         <div className="grid grid-cols-2 gap-3">
           {(['ENTREGA', 'RETIRADA'] as const).map(t => (
@@ -250,7 +251,7 @@ export default function StepDados({
                 ? <MapPin size={20} className={tipoEntrega === t ? 'text-green-600' : 'text-gray-400'} />
                 : <Store  size={20} className={tipoEntrega === t ? 'text-green-600' : 'text-gray-400'} />}
               <span className={`text-sm font-bold ${tipoEntrega === t ? 'text-green-700' : 'text-gray-600'}`}>
-                {t === 'ENTREGA' ? 'Receber em casa' : 'Retirar na loja'}
+                {t === 'ENTREGA' ? 'Receber em casa' : 'Retirar no local'}
               </span>
               {t === 'RETIRADA' && <span className="text-xs text-green-600 font-bold">Grátis</span>}
             </button>

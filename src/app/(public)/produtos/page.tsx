@@ -70,12 +70,12 @@ function ProdutosContent() {
         <ChevronRight size={14} />
         {nomeCategoria ? (
           <>
-            <Link href="/produtos" className="hover:text-green-600">Todos os Produtos</Link>
+            <Link href="/produtos" className="hover:text-orange-600">Cardápio</Link>
             <ChevronRight size={14} />
             <span className="font-medium text-gray-900">{nomeCategoria}</span>
           </>
         ) : (
-          <span className="font-medium text-gray-900">Todos os Produtos</span>
+          <span className="font-medium text-gray-900">Cardápio</span>
         )}
       </div>
 
@@ -102,16 +102,16 @@ function ProdutosContent() {
                 <li>
                   <button
                     onClick={() => selecionarCategoria(null)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${!categoriaSelecionada ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${!categoriaSelecionada ? 'bg-orange-50 text-orange-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
                   >
-                    Todas as categorias
+                    Todos os pratos
                   </button>
                 </li>
                 {categorias.map(cat => (
                   <li key={cat.id}>
                     <button
                       onClick={() => selecionarCategoria(cat.id)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${categoriaSelecionada === cat.id ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${categoriaSelecionada === cat.id ? 'bg-orange-50 text-orange-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
                     >
                       <span>{cat.icone}</span>
                       {cat.nome}
@@ -134,7 +134,7 @@ function ProdutosContent() {
                 <Filter size={16} /> Filtros
               </button>
               <p className="text-sm text-gray-500">
-                <span className="font-bold text-gray-900">{produtosFiltrados.length}</span> produtos encontrados
+                <span className="font-bold text-gray-900">{produtosFiltrados.length}</span> {produtosFiltrados.length === 1 ? 'prato encontrado' : 'pratos encontrados'}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -144,10 +144,10 @@ function ProdutosContent() {
                 onChange={e => setOrdenacao(e.target.value)}
                 className="bg-white border border-gray-200 rounded-lg text-sm px-3 py-2 outline-none font-medium cursor-pointer"
               >
-                <option value="padrao">Mais relevantes</option>
+                <option value="padrao">Destaques</option>
                 <option value="menor">Menor preço</option>
                 <option value="maior">Maior preço</option>
-                <option value="avaliacao">Melhor avaliados</option>
+                <option value="avaliacao">Mais bem avaliados</option>
               </select>
             </div>
           </div>
@@ -160,11 +160,11 @@ function ProdutosContent() {
             </div>
           ) : produtosFiltrados.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-32 text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl">
-              <span className="text-5xl mb-4">🔍</span>
-              <p className="font-bold text-lg">Nenhum produto encontrado</p>
-              <p className="text-sm mt-1">Tente outra categoria</p>
-              <button onClick={() => selecionarCategoria(null)} className="mt-4 text-green-600 hover:underline text-sm font-medium">
-                Ver todos
+              <span className="text-5xl mb-4">🍽️</span>
+              <p className="font-bold text-lg">Nenhum prato encontrado nessa categoria</p>
+              <p className="text-sm mt-1">Tente outra categoria ou busca</p>
+              <button onClick={() => selecionarCategoria(null)} className="mt-4 text-orange-500 hover:underline text-sm font-medium">
+                Ver todos os pratos
               </button>
             </div>
           ) : (
@@ -182,7 +182,7 @@ function ProdutosContent() {
 
 export default function ProdutosPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}>
       <ProdutosContent />
     </Suspense>
   );

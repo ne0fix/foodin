@@ -7,7 +7,7 @@ import { useProdutoDetailViewModel, useProdutosRelacionados } from '@/src/viewmo
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import ProdutoCard from '@/src/components/ProdutoCard';
 import { formatarMoeda } from '@/src/utils/formatadores';
-import { ChevronRight, Minus, Plus, Share2, Star, ShoppingCart } from 'lucide-react';
+import { ChevronRight, Minus, Plus, Share2, Star, ShoppingBag, Clock } from 'lucide-react';
 import { ProdutoDetailSkeleton } from '@/src/components/ui/Skeleton';
 
 export default function ProdutoDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,9 +30,9 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Breadcrumbs */}
       <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-5 overflow-x-auto whitespace-nowrap hide-scrollbar">
-        <Link href="/" className="hover:text-green-600">Início</Link>
+        <Link href="/" className="hover:text-orange-600">Início</Link>
         <ChevronRight size={12} />
-        <Link href="/produtos" className="hover:text-green-600">Produtos</Link>
+        <Link href="/produtos" className="hover:text-orange-600">Cardápio</Link>
         <ChevronRight size={12} />
         <span className="font-medium text-gray-900 truncate max-w-[140px] sm:max-w-none">{produto.nome}</span>
       </div>
@@ -63,7 +63,7 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
                   key={i}
                   type="button"
                   onClick={() => setImagemAtiva(i)}
-                  className={`rounded-xl border-2 overflow-hidden bg-white transition-all ${imagemAtiva === i ? 'border-green-500 shadow-md' : 'border-gray-200 hover:border-green-300'}`}
+                  className={`rounded-xl border-2 overflow-hidden bg-white transition-all ${imagemAtiva === i ? 'border-orange-500 shadow-md' : 'border-gray-200 hover:border-orange-300'}`}
                 >
                   <Image
                     src={src}
@@ -97,7 +97,7 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Preço */}
           <div className="flex items-baseline gap-3 mb-4">
-            <span className="text-3xl sm:text-4xl font-extrabold text-green-600 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-extrabold text-orange-600 tracking-tight">
               {formatarMoeda(produto.preco)}
             </span>
             {produto.precoOriginal && (
@@ -109,7 +109,7 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
           <div className="flex items-center gap-2 mb-5">
             <div className={`w-2.5 h-2.5 rounded-full ${produto.emEstoque ? 'bg-green-500' : 'bg-red-500'}`} />
             <span className="text-sm font-semibold text-gray-700">
-              {produto.emEstoque ? 'Em estoque' : 'Esgotado'}
+              {produto.emEstoque ? 'Disponível' : 'Indisponível'}
             </span>
           </div>
 
@@ -117,11 +117,11 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
           <div className="flex flex-row gap-3 mb-6">
             {produto.emEstoque && (
               <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden h-14 w-32 flex-shrink-0 bg-white">
-                <button onClick={decrementarQuantidade} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors">
+                <button onClick={decrementarQuantidade} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-orange-500 transition-colors">
                   <Minus size={16} />
                 </button>
                 <span className="flex-1 text-center font-bold text-gray-800">{quantidadeSelecionada}</span>
-                <button onClick={incrementarQuantidade} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors">
+                <button onClick={incrementarQuantidade} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-orange-500 transition-colors">
                   <Plus size={16} />
                 </button>
               </div>
@@ -129,16 +129,16 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
             {produto.emEstoque ? (
               <button
                 onClick={() => adicionarItem(produto, quantidadeSelecionada)}
-                className="flex-1 h-14 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-green-600/25 transition-all px-4"
+                className="flex-1 h-14 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 transition-all px-4"
               >
-                <ShoppingCart size={20} />
-                <span className="hidden sm:inline">Adicionar ao Carrinho</span>
+                <ShoppingBag size={20} />
+                <span className="hidden sm:inline">Adicionar ao Pedido</span>
                 <span className="sm:hidden">Adicionar</span>
               </button>
             ) : (
               <div className="flex-1 h-14 bg-gray-100 border border-gray-200 text-gray-400 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none">
                 <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
-                Produto Esgotado
+                Prato Indisponível
               </div>
             )}
           </div>
@@ -147,10 +147,21 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
           <div className="border-t border-gray-100 pt-5 space-y-2 text-sm text-gray-600">
             <div className="flex gap-3">
               <span className="font-semibold text-gray-700 w-24 flex-shrink-0">Categoria:</span>
-              <span className="capitalize">{produto.categoria.replace(/-/g, ' ')}</span>
+              <span className="capitalize">
+                <span className="bg-orange-50 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                  {produto.categoria}
+                </span>
+              </span>
+            </div>
+            <div className="flex gap-3 items-center">
+              <span className="font-semibold text-gray-700 w-24 flex-shrink-0">Entrega:</span>
+              <span className="flex items-center gap-1.5">
+                <Clock size={13} className="text-gray-400 flex-shrink-0" />
+                {produto.tempoEntrega ?? produto.quantidadePacote}
+              </span>
             </div>
             <div className="flex gap-3">
-              <span className="font-semibold text-gray-700 w-24 flex-shrink-0">Quantidade:</span>
+              <span className="font-semibold text-gray-700 w-24 flex-shrink-0">Porção:</span>
               <span>{produto.quantidadePacote}</span>
             </div>
             {produto.tags.length > 0 && (
@@ -158,14 +169,14 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
                 <span className="font-semibold text-gray-700 w-24 flex-shrink-0">Tags:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {produto.tags.map(t => (
-                    <span key={t} className="bg-gray-100 px-2 py-0.5 rounded-md text-xs font-semibold text-gray-500 uppercase">{t}</span>
+                    <span key={t} className="bg-orange-50 px-2 py-0.5 rounded-md text-xs font-semibold text-orange-600 uppercase">{t}</span>
                   ))}
                 </div>
               </div>
             )}
             <div className="flex gap-3 items-center pt-1">
               <span className="font-semibold text-gray-700 w-24 flex-shrink-0">Compartilhar:</span>
-              <button className="text-gray-400 hover:text-green-600 transition-colors"><Share2 size={16} /></button>
+              <button className="text-gray-400 hover:text-orange-500 transition-colors"><Share2 size={16} /></button>
             </div>
           </div>
         </div>
@@ -175,17 +186,17 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
       <div className="mb-10 lg:mb-16">
         <div className="flex border-b border-gray-200 overflow-x-auto hide-scrollbar gap-4 sm:gap-8">
           {[
-            { key: 'descricao', label: 'Descrição' },
+            { key: 'descricao', label: 'Ingredientes / Descrição' },
             { key: 'reviews',   label: `Avaliações (${produto.numAvaliacoes})` },
           ].map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`pb-3 font-bold text-sm sm:text-base whitespace-nowrap transition-colors relative flex-shrink-0 ${activeTab === tab.key ? 'text-green-600' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`pb-3 font-bold text-sm sm:text-base whitespace-nowrap transition-colors relative flex-shrink-0 ${activeTab === tab.key ? 'text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
             >
               {tab.label}
               {activeTab === tab.key && (
-                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-green-600 rounded-t-full" />
+                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 rounded-t-full" />
               )}
             </button>
           ))}
@@ -212,7 +223,7 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Produtos Relacionados */}
       <div>
-        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-5">Produtos Relacionados</h2>
+        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-5">Pratos Similares</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {produtos.map(p => (
             <ProdutoCard key={p.id} produto={p} />

@@ -19,8 +19,8 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <section className="relative bg-green-900 min-h-[320px] sm:min-h-[420px] lg:min-h-[460px] flex items-center overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=1600&q=80"
-          alt="Supermercado Ekomart"
+          src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&q=80"
+          alt="foodin — Delivery de comida"
           fill
           sizes="100vw"
           className="object-cover opacity-25"
@@ -31,27 +31,27 @@ export default function HomePage() {
           <div className="max-w-xl">
             <Image
               src="/gn2.png"
-              alt="Ekomart"
+              alt="foodin"
               width={499}
               height={241}
               className="h-15 w-auto mt-5 mb-10 sm:hidden drop-shadow-lg"
             />
-            <span className="hidden sm:inline-block bg-green-500 text-white text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
-              🔥 Ofertas da Semana
+            <span className="hidden sm:inline-block bg-orange-500 text-white text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
+              🔥 Promoções do Dia
             </span>
             <HeroTexto />
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/produtos"
-                className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-bold py-3.5 px-7 rounded-full transition-all hover:scale-105 shadow-lg"
+                className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-bold py-3.5 px-7 rounded-full transition-all hover:scale-105 shadow-lg"
               >
-                Ver Ofertas <ArrowRight size={18} />
+                Ver Cardápio <ArrowRight size={18} />
               </Link>
               <Link
                 href="/produtos"
                 className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3.5 px-7 rounded-full border border-white/20 transition-all backdrop-blur-sm"
               >
-                Todas as Categorias
+                Todos os Pratos
               </Link>
             </div>
           </div>
@@ -61,9 +61,9 @@ export default function HomePage() {
       {/* ── Categorias ── */}
       <section className="container mx-auto px-4 max-w-7xl mt-6 sm:mt-10">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-extrabold text-gray-900">Comprar por categoria</h2>
+          <h2 className="text-xl font-extrabold text-gray-900">Explorar o cardápio</h2>
           <Link href="/produtos" className="text-sm text-green-600 hover:underline font-medium flex items-center gap-1">
-            Ver todas <ArrowRight size={14} />
+            Ver tudo <ArrowRight size={14} />
           </Link>
         </div>
         {carregandoCategorias ? (
@@ -101,10 +101,10 @@ export default function HomePage() {
       <section className="container mx-auto px-4 max-w-7xl mt-6 sm:mt-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { icon: <Truck size={20} />, titulo: 'Entrega Rápida', desc: 'Mesmo dia ou no dia seguinte' },
-            { icon: <Leaf size={20} />, titulo: 'Produtos Frescos', desc: 'Direto dos produtores locais' },
-            { icon: <ShieldCheck size={20} />, titulo: 'Compra Garantida', desc: 'Reembolso total garantido' },
-            { icon: <ThumbsUp size={20} />, titulo: 'Melhor Qualidade', desc: 'Selecionados com cuidado' },
+            { icon: <Truck size={20} />, titulo: 'Entrega Rápida', desc: 'Seu pedido em minutos na sua porta' },
+            { icon: <Leaf size={20} />, titulo: 'Pratos Frescos', desc: 'Preparados na hora, com ingredientes frescos' },
+            { icon: <ShieldCheck size={20} />, titulo: 'Pedido Garantido', desc: 'Reembolso total se houver problema' },
+            { icon: <ThumbsUp size={20} />, titulo: 'Pague do seu jeito', desc: 'PIX, cartão de crédito ou débito' },
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
               <div className="text-green-600 bg-white p-2.5 rounded-lg shadow-sm flex-shrink-0">{item.icon}</div>
@@ -157,7 +157,7 @@ export default function HomePage() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500">Nenhum produto encontrado para esta seção no momento.</p>
+            <p className="text-gray-500">Nenhum prato encontrado para esta seção no momento.</p>
           )}
         </section>
       ))}
@@ -168,30 +168,30 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2 relative rounded-2xl overflow-hidden bg-gradient-to-r from-orange-500 to-amber-400 p-8 min-h-[200px] flex flex-col justify-between">
             <div>
-              <p className="text-orange-100 text-xs font-bold uppercase tracking-widest mb-2">Hortifruti & Frutas</p>
+              <p className="text-orange-100 text-xs font-bold uppercase tracking-widest mb-2">Hambúrgueres & Lanches</p>
               <h3 className="text-white text-3xl font-extrabold leading-tight">
-                Frutas e Verduras<br />frescas até 40% OFF
+                Os melhores lanches<br />até 40% OFF hoje
               </h3>
             </div>
             <Link
-              href="/produtos?categoria=hortifruti"
+              href="/produtos"
               className="self-start mt-5 bg-white text-orange-600 font-bold text-sm px-6 py-2.5 rounded-full hover:scale-105 transition-transform"
             >
-              Comprar agora
+              Pedir agora
             </Link>
           </div>
           <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-green-700 to-green-500 p-8 min-h-[200px] flex flex-col justify-between">
             <div>
-              <p className="text-green-200 text-xs font-bold uppercase tracking-widest mb-2">Cesta Básica</p>
+              <p className="text-green-200 text-xs font-bold uppercase tracking-widest mb-2">Pratos do Dia</p>
               <h3 className="text-white text-2xl font-extrabold leading-tight">
-                Arroz, Feijão<br />e muito mais!
+                Almoço e jantar<br />quentinhos!
               </h3>
             </div>
             <Link
-              href="/produtos?categoria=mercearia"
+              href="/produtos"
               className="self-start mt-5 bg-white text-green-700 font-bold text-sm px-6 py-2.5 rounded-full hover:scale-105 transition-transform"
             >
-              Ver produtos
+              Ver o cardápio
             </Link>
           </div>
         </div>

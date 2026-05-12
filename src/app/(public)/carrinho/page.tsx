@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import { formatarMoeda } from '@/src/utils/formatadores';
-import { ChevronRight, ChevronLeft, Minus, Plus, Trash2, ShieldCheck, ShoppingCart, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Minus, Plus, Trash2, ShieldCheck, ShoppingBag, X, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function CarrinhoPage() {
@@ -38,7 +38,7 @@ export default function CarrinhoPage() {
   if (!hidratado) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -47,17 +47,17 @@ export default function CarrinhoPage() {
     return (
       <div className="container mx-auto px-4 max-w-7xl py-16 flex flex-col items-center justify-center text-center">
         <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gray-50 rounded-full flex items-center justify-center mb-6 border-4 border-dashed border-gray-200">
-          <ShoppingCart size={48} className="text-gray-300" />
+          <ShoppingBag size={48} className="text-gray-300" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">Carrinho vazio</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">Nenhum prato adicionado</h1>
         <p className="text-gray-500 mb-8 max-w-sm text-sm sm:text-base">
-          Você ainda não adicionou nenhum produto. Explore nossas ofertas!
+          Você ainda não adicionou nenhum prato. Explore o nosso cardápio!
         </p>
         <Link
           href="/produtos"
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 px-8 rounded-full transition-colors shadow-md shadow-green-600/25"
+          className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-8 rounded-full transition-colors shadow-md shadow-orange-500/25"
         >
-          Começar a Comprar
+          Ver o Cardápio
         </Link>
       </div>
     );
@@ -70,10 +70,10 @@ export default function CarrinhoPage() {
       <div className="flex sm:hidden items-center justify-between mb-4">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-green-600 transition-colors"
+          className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-orange-500 transition-colors"
         >
           <ChevronLeft size={20} />
-          Continuar comprando
+          Continuar pedindo
         </button>
         <button
           onClick={() => router.back()}
@@ -86,9 +86,9 @@ export default function CarrinhoPage() {
 
       {/* Breadcrumbs — apenas desktop */}
       <div className="hidden sm:flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-5">
-        <Link href="/" className="hover:text-green-600">Início</Link>
+        <Link href="/" className="hover:text-orange-500">Início</Link>
         <ChevronRight size={12} />
-        <span className="font-medium text-gray-900">Meu Carrinho</span>
+        <span className="font-medium text-gray-900">Meu Pedido</span>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -100,8 +100,8 @@ export default function CarrinhoPage() {
             {/* Header */}
             <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">
-                Carrinho&nbsp;
-                <span className="text-gray-400 font-medium text-base">({quantidadeTotal} {quantidadeTotal === 1 ? 'item' : 'itens'})</span>
+                Seu Pedido&nbsp;
+                <span className="text-gray-400 font-medium text-base">({quantidadeTotal} {quantidadeTotal === 1 ? 'prato' : 'pratos'})</span>
               </h2>
               <button
                 onClick={limparCarrinho}
@@ -113,7 +113,7 @@ export default function CarrinhoPage() {
 
             {/* Cabeçalho tabela — só desktop */}
             <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50 bg-gray-50/50">
-              <div className="col-span-6">Produto</div>
+              <div className="col-span-6">Prato</div>
               <div className="col-span-3 text-center">Quantidade</div>
               <div className="col-span-3 text-right">Total</div>
             </div>
@@ -143,14 +143,14 @@ export default function CarrinhoPage() {
                       <div className="min-w-0 flex-1">
                         <Link
                           href={`/produto/${item.produto.id}`}
-                          className="font-bold text-gray-900 hover:text-green-600 transition-colors text-sm line-clamp-2"
+                          className="font-bold text-gray-900 hover:text-orange-600 transition-colors text-sm line-clamp-2"
                         >
                           {item.produto.nome}
                         </Link>
-                        <p className="text-xs text-gray-400 mt-0.5">{item.produto.quantidadePacote}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Porção: {item.produto.quantidadePacote}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{formatarMoeda(item.produto.preco)}/un</p>
                         {/* Total visível só no mobile */}
-                        <p className="text-green-600 font-extrabold text-sm mt-1 md:hidden">
+                        <p className="text-orange-600 font-extrabold text-sm mt-1 md:hidden">
                           {formatarMoeda(item.produto.preco * item.quantidade)}
                         </p>
                       </div>
@@ -168,7 +168,7 @@ export default function CarrinhoPage() {
                         <span className="w-8 text-center font-bold text-gray-900 text-sm">{item.quantidade}</span>
                         <button
                           onClick={() => atualizarQuantidade(item.produto.id, item.quantidade + 1)}
-                          className="w-9 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors"
+                          className="w-9 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-orange-500 transition-colors"
                         >
                           <Plus size={14} />
                         </button>
@@ -202,9 +202,9 @@ export default function CarrinhoPage() {
             </div>
           </div>
 
-          {/* Link continuar comprando */}
-          <Link href="/produtos" className="flex items-center gap-1.5 text-sm text-green-600 hover:underline font-medium mt-4">
-            <ChevronRight size={14} className="rotate-180" /> Continuar comprando
+          {/* Link continuar pedindo */}
+          <Link href="/produtos" className="flex items-center gap-1.5 text-sm text-orange-500 hover:underline font-medium mt-4">
+            <ChevronRight size={14} className="rotate-180" /> Continuar pedindo
           </Link>
         </div>
 
@@ -213,13 +213,22 @@ export default function CarrinhoPage() {
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 sm:p-6 lg:sticky lg:top-24 shadow-sm">
             <h3 className="text-lg font-extrabold text-gray-900 mb-5">Resumo do Pedido</h3>
 
+            {/* Tempo de entrega estimado */}
+            <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-xl px-3 py-2.5 mb-4">
+              <Clock size={15} className="text-orange-500 flex-shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-orange-700">Tempo estimado de entrega: </span>
+                <span className="text-orange-600">{process.env.NEXT_PUBLIC_TEMPO_ENTREGA_PADRAO ?? '30-45 min'}</span>
+              </div>
+            </div>
+
             <div className="space-y-3 mb-5 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
                 <span className="font-bold text-gray-900">{formatarMoeda(subtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Frete est.*</span>
+                <span>Taxa de entrega est.*</span>
                 <span className="font-bold">
                   {freteEstimado === 0
                     ? <span className="text-green-600">Grátis</span>
@@ -233,19 +242,19 @@ export default function CarrinhoPage() {
 
             <div className="flex justify-between items-end mb-6">
               <span className="font-extrabold text-gray-900">Total</span>
-              <span className="text-2xl sm:text-3xl font-black text-green-600">{formatarMoeda(subtotal + freteEstimado)}</span>
+              <span className="text-2xl sm:text-3xl font-black text-orange-600">{formatarMoeda(subtotal + freteEstimado)}</span>
             </div>
 
             <button
               onClick={handleFinalizarCompra}
               disabled={loadingCheckout}
-              className="w-full flex justify-center items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-base mb-5 shadow-md shadow-green-600/25 transition-all hover:-translate-y-0.5 disabled:opacity-70"
+              className="w-full flex justify-center items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl text-base mb-5 shadow-md shadow-orange-500/25 transition-all hover:-translate-y-0.5 disabled:opacity-70"
             >
-              {loadingCheckout ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Finalizar Compra'}
+              {loadingCheckout ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Finalizar Pedido'}
             </button>
 
             <p className="text-[10px] text-gray-400 text-center mt-2">
-              * Frete calculado com precisão no checkout
+              * Taxa de entrega calculada com precisão no checkout
             </p>
 
             {/* Selos de segurança */}

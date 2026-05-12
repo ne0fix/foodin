@@ -17,9 +17,7 @@ async function main() {
 
   await prisma.admin.upsert({
     where: { email: adminEmail },
-    update: {
-      senhaHash: hashedPassword,
-    },
+    update: { senhaHash: hashedPassword },
     create: {
       email: adminEmail,
       nome: 'Admin',
@@ -27,6 +25,24 @@ async function main() {
     },
   });
   console.log('Admin user created/updated.');
+
+  // Remove dados antigos de supermercado (ordem: tags > produtos > categorias)
+  const categoriasAntigas = [
+    'hortifruti', 'frios-e-embutidos', 'congelados',
+    'higiene-e-beleza', 'limpeza', 'pet-shop', 'utilidades',
+  ];
+  const produtosAntigos = await prisma.produto.findMany({
+    where: { categoriaId: { in: categoriasAntigas } },
+    select: { id: true },
+  });
+  const idsAntigos = produtosAntigos.map(p => p.id);
+  if (idsAntigos.length > 0) {
+    await prisma.produtoTag.deleteMany({ where: { produtoId: { in: idsAntigos } } });
+    await prisma.produto.deleteMany({ where: { id: { in: idsAntigos } } });
+  }
+  for (const id of categoriasAntigas) {
+    await prisma.categoria.deleteMany({ where: { id } });
+  }
 
   for (const categoria of mockCategorias) {
     await prisma.categoria.upsert({
@@ -41,7 +57,10 @@ async function main() {
   }
   console.log('Categories created/updated.');
 
-  const tags = ['desconto', 'fresco', 'organico', 'sem-gluten', 'sem-lactose'];
+  const tags = [
+    'desconto', 'mais-pedido', 'novo', 'especial',
+    'vegetariano', 'vegano', 'picante', 'sem-gluten',
+  ];
   for (const tagLabel of tags) {
     await prisma.tag.upsert({
       where: { id: tagLabel },
@@ -49,87 +68,127 @@ async function main() {
       create: { id: tagLabel, label: tagLabel },
     });
   }
+  // Remove tags antigas que não existem mais
+  const tagsAntigas = ['fresco', 'organico', 'sem-lactose'];
+  for (const tagLabel of tagsAntigas) {
+    await prisma.tag.deleteMany({ where: { id: tagLabel } });
+  }
   console.log('Tags created/updated.');
 
   for (const produto of mockProdutos) {
     const productData = {
-        nome: produto.nome,
-        descricao: produto.descricao,
-        preco: produto.preco,
-        precoOriginal: produto.precoOriginal,
-        imagem: produto.imagem,
-        quantidadePacote: produto.quantidadePacote,
-        emEstoque: produto.emEstoque,
-        avaliacao: produto.avaliacao,
-        numAvaliacoes: produto.numAvaliacoes,
-        categoriaId: produto.categoria,
+      nome: produto.nome,
+      descricao: produto.descricao,
+      preco: produto.preco,
+      precoOriginal: produto.precoOriginal,
+      imagem: produto.imagem,
+      quantidadePacote: produto.quantidadePacote,
+      emEstoque: produto.emEstoque,
+      avaliacao: produto.avaliacao,
+      numAvaliacoes: produto.numAvaliacoes,
+      categoriaId: produto.categoria,
     };
 
-    // Using a non-atomic upsert logic because `nome` is not a unique field in the schema
     const existingProduct = await prisma.produto.findFirst({
-        where: { nome: productData.nome },
+      where: { nome: productData.nome },
     });
 
     let upsertedProduto;
     if (existingProduct) {
-        upsertedProduto = await prisma.produto.update({
-            where: { id: existingProduct.id },
-            data: productData,
-        });
+      upsertedProduto = await prisma.produto.update({
+        where: { id: existingProduct.id },
+        data: productData,
+      });
     } else {
-        upsertedProduto = await prisma.produto.create({
-            data: productData,
-        });
+      upsertedProduto = await prisma.produto.create({
+        data: productData,
+      });
     }
 
-
     if (produto.tags && produto.tags.length > 0) {
-        await prisma.produtoTag.deleteMany({
-            where: { produtoId: upsertedProduto.id }
-        });
-        
+      await prisma.produtoTag.deleteMany({ where: { produtoId: upsertedProduto.id } });
       for (const tagLabel of produto.tags) {
         const tag = await prisma.tag.findUnique({ where: { id: tagLabel } });
         if (tag) {
           await prisma.produtoTag.create({
-            data: {
-              produtoId: upsertedProduto.id,
-              tagId: tag.id,
-            },
+            data: { produtoId: upsertedProduto.id, tagId: tag.id },
           });
         }
       }
     }
   }
-  console.log(`Products and product-tags for ${mockProdutos.length} products created/updated.`);
+  console.log(`Products created/updated: ${mockProdutos.length}`);
 
-  await prisma.secao.upsert({
-    where: { slug: 'ofertas-do-dia' },
-    update: {},
-    create: {
-      slug: 'ofertas-do-dia',
-      titulo: '🔥 Ofertas do Dia',
-      subtitulo: 'Aproveite as melhores ofertas de hoje',
+  // Seções da home — food delivery
+  const secoes = [
+    {
+      slug: 'mais-pedidos',
+      titulo: '🔥 Mais Pedidos',
+      subtitulo: 'Os pratos favoritos dos nossos clientes',
       ordem: 0,
-      modoSelecao: 'AUTOMATICO',
-      filtroTag: 'desconto',
+      modoSelecao: 'AUTOMATICO' as const,
+      filtroTag: 'mais-pedido',
+      filtroCategoriaId: null,
       maxItens: 8,
     },
-  });
-
-  await prisma.secao.upsert({
-    where: { slug: 'frios-embutidos' },
-    update: {},
-    create: {
-      slug: 'frios-embutidos',
-      titulo: '🧀 Frios e Embutidos',
-      subtitulo: 'Frango, salsicha, linguiça e mais',
+    {
+      slug: 'hamburgueres',
+      titulo: '🍔 Hambúrgueres',
+      subtitulo: 'Artesanais, smash e muito mais',
       ordem: 1,
-      modoSelecao: 'AUTOMATICO',
-      filtroCategoriaId: 'frios-e-embutidos',
+      modoSelecao: 'AUTOMATICO' as const,
+      filtroTag: null,
+      filtroCategoriaId: 'hamburguer',
       maxItens: 8,
     },
-  });
+    {
+      slug: 'pizzas',
+      titulo: '🍕 Pizzas',
+      subtitulo: 'Tradicionais, especiais e vegetarianas',
+      ordem: 2,
+      modoSelecao: 'AUTOMATICO' as const,
+      filtroTag: null,
+      filtroCategoriaId: 'pizza',
+      maxItens: 8,
+    },
+    {
+      slug: 'promocoes',
+      titulo: '💸 Promoções',
+      subtitulo: 'Aproveite os descontos de hoje',
+      ordem: 3,
+      modoSelecao: 'AUTOMATICO' as const,
+      filtroTag: 'desconto',
+      filtroCategoriaId: null,
+      maxItens: 8,
+    },
+  ];
+
+  // Remove seções antigas de supermercado
+  await prisma.secao.deleteMany({ where: { slug: { in: ['ofertas-do-dia', 'frios-embutidos'] } } });
+
+  for (const secao of secoes) {
+    await prisma.secao.upsert({
+      where: { slug: secao.slug },
+      update: {
+        titulo: secao.titulo,
+        subtitulo: secao.subtitulo,
+        ordem: secao.ordem,
+        filtroTag: secao.filtroTag,
+        filtroCategoriaId: secao.filtroCategoriaId,
+        maxItens: secao.maxItens,
+      },
+      create: {
+        slug: secao.slug,
+        titulo: secao.titulo,
+        subtitulo: secao.subtitulo,
+        ordem: secao.ordem,
+        modoSelecao: secao.modoSelecao,
+        filtroTag: secao.filtroTag,
+        filtroCategoriaId: secao.filtroCategoriaId,
+        maxItens: secao.maxItens,
+      },
+    });
+  }
   console.log('Home sections created/updated.');
 
   console.log('Seeding finished.');

@@ -21,6 +21,7 @@ export interface ProdutoPublicoDTO {
   categoria: string;
   categoriaId: string;
   quantidadePacote: string;
+  tempoEntrega: string;
   emEstoque: boolean;
   avaliacao: number;
   numAvaliacoes: number;
@@ -76,11 +77,11 @@ export type PrismaSecaoCompleta = Secao & {
   itens: (SecaoItem & { produto: PrismaProdutoCompleto })[];
 };
 
-/**
- * Converts a Prisma Produto object (with relations) to a public-facing DTO.
- * @param produto The complete Prisma product object.
- * @returns A product DTO safe to be sent to the client.
- */
+function inferirTempoEntrega(quantidadePacote: string): string {
+  if (/\d+\s*[-–]\s*\d+\s*min/i.test(quantidadePacote)) return quantidadePacote;
+  return process.env.NEXT_PUBLIC_TEMPO_ENTREGA_PADRAO ?? '30-45 min';
+}
+
 export function produtoToDTO(produto: PrismaProdutoCompleto): ProdutoPublicoDTO {
   return {
     id: produto.id,
@@ -93,6 +94,7 @@ export function produtoToDTO(produto: PrismaProdutoCompleto): ProdutoPublicoDTO 
     categoria: produto.categoria.nome,
     categoriaId: produto.categoriaId,
     quantidadePacote: produto.quantidadePacote,
+    tempoEntrega: inferirTempoEntrega(produto.quantidadePacote),
     emEstoque: produto.emEstoque,
     avaliacao: produto.avaliacao,
     numAvaliacoes: produto.numAvaliacoes,

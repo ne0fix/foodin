@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, Clock, XCircle, Copy, Check } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, Copy, Check, Bike } from 'lucide-react';
 import { formatarMoeda } from '@/src/utils/formatadores';
 
 interface PedidoStatus {
@@ -76,15 +76,28 @@ export default function PedidoPage() {
   if (pedido.status === 'PAID') {
     return (
       <div className="container mx-auto px-4 max-w-lg py-16 text-center">
-        <CheckCircle size={64} className="text-green-500 mx-auto mb-4" />
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Pagamento confirmado!</h1>
+        <div className="flex justify-center mb-4">
+          <div className="relative">
+            <CheckCircle size={64} className="text-green-500" />
+            <div className="absolute -bottom-1 -right-1 bg-orange-500 rounded-full p-1">
+              <Bike size={16} className="text-white" />
+            </div>
+          </div>
+        </div>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Pedido Confirmado!</h1>
         <p className="text-gray-500 mb-2">Pedido <span className="font-bold">#{id.slice(-8).toUpperCase()}</span></p>
-        <p className="text-2xl font-black text-green-600 mb-8">{formatarMoeda(pedido.total)}</p>
+        <p className="text-2xl font-black text-orange-600 mb-4">{formatarMoeda(pedido.total)}</p>
+        <div className="flex items-center justify-center gap-2 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3 mb-8">
+          <Clock size={16} className="text-orange-500" />
+          <span className="text-sm font-bold text-orange-700">
+            Tempo estimado de entrega: {process.env.NEXT_PUBLIC_TEMPO_ENTREGA_PADRAO ?? '30-45 min'}
+          </span>
+        </div>
         <Link href="/cliente/pedidos" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-colors mb-4 block w-fit mx-auto">
-          Ir para meus pedidos
+          Acompanhar meu pedido
         </Link>
-        <Link href="/produtos" className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full transition-colors block w-fit mx-auto">
-          Continuar comprando
+        <Link href="/produtos" className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full transition-colors block w-fit mx-auto">
+          Ver o cardápio
         </Link>
       </div>
     );

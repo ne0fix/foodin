@@ -53,7 +53,7 @@ export default function Header() {
       {/* Top Bar — apenas desktop */}
       <div className="bg-green-700 text-white text-xs py-2 hidden md:block">
         <div className="container mx-auto px-4 max-w-7xl flex justify-between items-center gap-4">
-          <p className="font-medium">🚚 Entrega grátis em compras acima de <strong>R$&nbsp;89,00</strong> — aproveite!</p>
+          <p className="font-medium">🚚 Entrega grátis em pedidos acima de <strong>R$&nbsp;200,00</strong> — peça agora!</p>
           <div className="flex gap-5 items-center flex-shrink-0">
             <span className="flex items-center gap-1 opacity-90"><Phone size={12} /> (85) 99113-5449</span>
             <span className="flex items-center gap-1 opacity-90"><MapPin size={12} /> Pacatuba, CE</span>
@@ -77,7 +77,7 @@ export default function Header() {
         <Link href="/" className="hidden sm:flex items-center flex-shrink-0 mr-5">
           <Image
             src="/gn2.png"
-            alt="Ekomart"
+            alt="foodin"
             width={499}
             height={241}
             className="h-12 sm:h-14 md:h-12 w-auto"
@@ -104,7 +104,7 @@ export default function Header() {
               value={busca}
               onChange={e => setBusca(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleBuscar()}
-              placeholder="Buscar produtos..."
+              placeholder="Buscar prato, ingrediente..."
               className="flex-1 px-2 py-2 sm:px-3 sm:py-2.5 outline-none text-sm min-w-0"
             />
             <button
@@ -138,7 +138,7 @@ export default function Header() {
                 </span>
               )}
             </div>
-            <span className="hidden sm:block text-sm font-bold">Carrinho</span>
+            <span className="hidden sm:block text-sm font-bold">Pedido</span>
           </Link>
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function Header() {
                 href="/produtos"
                 className="flex items-center gap-1.5 bg-green-600 text-white px-4 py-2 rounded-lg mr-2 hover:bg-green-700 transition-colors font-bold"
               >
-                Categorias <ChevronDown size={14} />
+                Cardápio <ChevronDown size={14} />
               </Link>
             </li>
             {categorias.map(cat => (
@@ -179,7 +179,7 @@ export default function Header() {
         <div className="sm:hidden border-t border-gray-100 bg-white shadow-lg">
           <div className="container mx-auto px-4 py-3 max-w-7xl">
             <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-2.5 mb-3 text-sm font-bold text-red-600 text-center">
-              🔥 Até 40% OFF hoje — aproveite!
+              🔥 Promoções hoje — aproveite!
             </div>
             <ul className="grid grid-cols-2 gap-1">
               {categorias.map(cat => (
@@ -199,7 +199,7 @@ export default function Header() {
                   onClick={() => setMenuAberto(false)}
                   className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-green-600 text-white font-bold text-sm transition-colors w-full"
                 >
-                  🗂 Ver todas as categorias
+                  🍽️ Ver o cardápio completo
                 </Link>
               </li>
             </ul>

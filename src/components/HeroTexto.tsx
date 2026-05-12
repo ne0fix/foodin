@@ -3,15 +3,15 @@
 import { useState, useEffect, useRef } from 'react';
 
 const mensagens = [
-  { titulo: 'Compras frescas\ndireto na sua porta',        sub: 'O preço mais baixo de toda a região!' },
-  { titulo: 'Aqui todos os dias\ntem promoção para você.', sub: 'O preço mais baixo de toda a região!' },
-  { titulo: 'Seu dinheiro\nrende mais aqui',               sub: 'Promoção diária • Produto selecionado.' },
-  { titulo: 'Toda hora uma oferta\nnova pra você.',        sub: 'O preço mais baixo de toda a região!' },
-  { titulo: 'Seu mercado favorito\na um clique.',          sub: 'O preço mais baixo de toda a região!' },
-  { titulo: 'Planeje suas compras\ncom quem te valoriza',  sub: 'Menor preço da região • Todo dia tem promoção.' },
-  { titulo: 'Inteligência é pagar\nmenos e comer melhor.', sub: 'O preço mais baixo de toda a região!' },
-  { titulo: 'Economia real,\nproduto de verdade.',         sub: 'O preço mais baixo de toda a região!' },
-  { titulo: 'Fazer compra boa\nsem gastar muito existe',   sub: 'E aqui você encontra! Todo dia.' },
+  { titulo: 'Sua comida favorita\nna sua porta',            sub: 'Delivery rápido e sem complicação!' },
+  { titulo: 'Peça agora e receba\nem minutos',              sub: 'Os melhores pratos, onde você estiver.' },
+  { titulo: 'Pratos frescos\nfeitos com carinho',           sub: 'Qualidade garantida em cada entrega.' },
+  { titulo: 'Fome? A gente\nresolve pra você.',             sub: 'Peça agora • Pague com PIX ou cartão.' },
+  { titulo: 'O sabor de sempre\na um clique.',              sub: 'Variedade de pratos para todos os gostos.' },
+  { titulo: 'Entrega rápida\npra matar a fome já.',         sub: 'Sem sair de casa, sem perder tempo.' },
+  { titulo: 'Seu restaurante\nfavorito aqui.',              sub: 'Escolha, peça e aguarde — simples assim.' },
+  { titulo: 'De hambúrguer\na japonesa — temos tudo.',      sub: 'O cardápio mais completo da cidade.' },
+  { titulo: 'Comer bem é\ndireito seu.',                    sub: 'E nós entregamos isso na sua porta.' },
 ];
 
 export default function HeroTexto() {
