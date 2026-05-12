@@ -22,15 +22,15 @@ export default function Footer() {
               />
             </div>
             <p className="text-sm leading-relaxed mb-5">
-              Produtos frescos e de qualidade entregues na sua porta. Compramos diretamente dos produtores para garantir o melhor preço.
+              Delivery de comida rápido e fácil. Hambúrgueres, pizzas, japonesa e muito mais entregues na sua porta.
             </p>
             <div className="space-y-2 text-sm">
               <p className="flex items-center gap-2"><Phone size={14} className="text-green-500 flex-shrink-0" /> (85) 99113-5449</p>
               <p className="flex items-start gap-2"><MapPin size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
-                <span>Av. XVII, 404 - Sen. Carlos Jereissati<br />Pacatuba - CE, 61800-000</span>
+                <span>Pacatuba - CE</span>
               </p>
               <p className="flex items-start gap-2"><Clock size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
-                <span>Super G & N<br />Aberto · Fecha 23:00</span>
+                <span>Todos os dias<br />11:00 – 23:00</span>
               </p>
             </div>
           </div>
@@ -58,14 +58,13 @@ export default function Footer() {
             <h4 className="text-white font-bold mb-5">Categorias</h4>
             <ul className="space-y-2.5 text-sm">
               {[
-                ['hortifruti', '🥦 Hortifruti'],
-                ['frutas',     '🍎 Frutas'],
-                ['carnes',     '🥩 Carnes'],
-                ['laticinios', '🥛 Laticínios'],
-                ['padaria',    '🍞 Padaria'],
+                ['hamburguer', '🍔 Hambúrguer'],
+                ['pizza',      '🍕 Pizza'],
+                ['hot-dog',    '🌭 Hot Dog'],
+                ['japonesa',   '🍣 Japonesa'],
+                ['brasileira', '🍖 Brasileira'],
+                ['sobremesas', '🍰 Sobremesas'],
                 ['bebidas',    '🥤 Bebidas'],
-                ['mercearia',  '🛒 Mercearia'],
-                ['limpeza',    '🧹 Limpeza'],
               ].map(([id, label]) => (
                 <li key={id}>
                   <Link href={`/produtos?categoria=${id}`} className="hover:text-green-400 transition-colors">{label}</Link>
@@ -98,7 +97,7 @@ export default function Footer() {
 
         {/* Rodapé inferior */}
         <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-          <p>© 2026 Super G & N. Todos os direitos reservados.</p>
+          <p>© 2026 FoodIN. Todos os direitos reservados.</p>
           <div className="flex items-center gap-2">
             {['VISA', 'MASTER', 'PIX', 'BOLETO', 'AMEX'].map(m => (
               <div key={m} className="bg-gray-800 px-2 py-1 rounded text-[10px] font-bold text-gray-400">{m}</div>

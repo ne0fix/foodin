@@ -37,7 +37,7 @@ model Produto {
   imagens          String[] @default([])
   quantidadePacote String
   emEstoque        Boolean  @default(true)
-  estoqueQuantidade Int     @default(-1) // -1 = não rastreado; >=0 = rastreado
+  estoqueQuantidade Int     @default(-1)
   avaliacao        Float    @default(0)
   numAvaliacoes    Int      @default(0)
   ativo            Boolean  @default(true)
@@ -48,6 +48,7 @@ model Produto {
   orderItems       OrderItem[]
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
+
   @@index([categoriaId])
   @@index([emEstoque])
   @@index([ativo])
@@ -119,14 +120,14 @@ enum EntregaTipo {
   RETIRADA
 }
 
-// ─── Enums de Cliente ─────────────────────────────────────────────────────────
-
 enum StatusPedidoCliente {
   PEDIDO_REALIZADO
   PAGAMENTO_PROCESSANDO
   APROVADO
   EM_SEPARACAO
   LIBERADO
+  EM_ROTA
+  ENTREGUE
   CANCELADO
 }
 
@@ -135,9 +136,9 @@ enum StatusPedidoCliente {
 model Cliente {
   id           String    @id @default(cuid())
   nome         String
-  cpf          String    @unique  // apenas dígitos, ex: "01234567890"
-  whatsapp     String             // apenas dígitos, ex: "85999990000"
-  pinHash      String             // bcrypt do PIN de 4 dígitos
+  cpf          String    @unique
+  whatsapp     String
+  pinHash      String
   ativo        Boolean   @default(true)
   criadoEm    DateTime  @default(now())
   atualizadoEm DateTime  @updatedAt
@@ -155,7 +156,7 @@ model Endereco {
   clienteId   String
   cliente     Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
 
-  apelido     String   @default("Casa")  // "Casa", "Trabalho", etc.
+  apelido     String   @default("Casa")
   cep         String
   logradouro  String
   numero      String
@@ -172,46 +173,62 @@ model Endereco {
   @@index([clienteId])
 }
 
+// ─── Entregador ───────────────────────────────────────────────────────────────
+
+model Entregador {
+  id           String   @id @default(cuid())
+  nome         String
+  telefone     String   @unique
+  senhaHash    String
+  ativo        Boolean  @default(true)
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  pedidos      Order[]  @relation("EntregadorPedidos")
+
+  @@index([telefone])
+}
+
 // ─── Pedido ───────────────────────────────────────────────────────────────────
 
 model Order {
   id                String          @id @default(cuid())
   status            OrderStatus     @default(PENDING_PAYMENT)
 
-  // Comprador anônimo — coletado no checkout
   compradorNome     String
   compradorEmail    String
   compradorCpf      String
   compradorTelefone String
 
-  // Vincular pedido a cliente logado (opcional — mantém compatibilidade com pedidos anônimos)
   clienteId    String?
   cliente      Cliente? @relation("ClientePedidos", fields: [clienteId], references: [id])
 
-  // Status visível ao cliente (mapeado do status interno MP)
   statusCliente StatusPedidoCliente @default(PEDIDO_REALIZADO)
 
-  // Entrega
   entregaTipo       EntregaTipo
   cep               String?
   logradouro        String?
   numero            String?
   complemento       String?
+  referencia        String?
   bairro            String?
   cidade            String?
   uf                String?
 
-  // Valores — SEMPRE calculados no backend
   subtotal          Decimal         @db.Decimal(10,2)
   frete             Decimal         @db.Decimal(10,2) @default(0)
   total             Decimal         @db.Decimal(10,2)
 
-  // Mercado Pago
   metodoPagamento   MetodoPagamento?
   mpPaymentId       String?         @unique
-  mpStatus          String?         // status bruto retornado pelo MP
-  mpQrCode          String?         @db.Text  // PIX: código copia-e-cola
-  mpQrCodeBase64    String?         @db.Text  // PIX: imagem base64
+  mpStatus          String?
+  mpQrCode          String?         @db.Text
+  mpQrCodeBase64    String?         @db.Text
+
+  entregadorId  String?
+  entregador    Entregador? @relation("EntregadorPedidos", fields: [entregadorId], references: [id])
+  aceitoEm      DateTime?
+  entregueEm    DateTime?
 
   criadoEm         DateTime        @default(now())
   atualizadoEm     DateTime        @updatedAt
@@ -222,6 +239,7 @@ model Order {
   @@index([status])
   @@index([compradorEmail])
   @@index([mpPaymentId])
+  @@index([entregadorId])
 }
 
 // ─── Item do Pedido ───────────────────────────────────────────────────────────
@@ -233,7 +251,6 @@ model OrderItem {
   produtoId     String
   produto       Produto  @relation(fields: [produtoId], references: [id])
 
-  // Snapshot — valores congelados no momento da compra
   nomeProduto   String
   imagemProduto String
   preco         Decimal  @db.Decimal(10,2)

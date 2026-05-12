@@ -5,21 +5,21 @@ html {
 }
 
 /*
-  Paleta green baseada em #008641 como green-600.
-  Gerada mantendo H≈145°, S~100%, variando Lightness.
+  Paleta brand laranja baseada em #E84010 como green-600 (cor da logo FoodIN).
+  Gerada mantendo H≈15°, S~100%, variando Lightness.
 */
 @theme {
-  --color-green-50:  #eaf6ee;
-  --color-green-100: #cdeada;
-  --color-green-200: #9ad5b5;
-  --color-green-300: #67c090;
-  --color-green-400: #34ab6b;
-  --color-green-500: #009a4d;
-  --color-green-600: #008641;
-  --color-green-700: #006b34;
-  --color-green-800: #005027;
-  --color-green-900: #003519;
-  --color-green-950: #001d0e;
+  --color-green-50:  #fef4ee;
+  --color-green-100: #fce3d3;
+  --color-green-200: #f9c7a7;
+  --color-green-300: #f5ab7b;
+  --color-green-400: #f08e4e;
+  --color-green-500: #ed7030;
+  --color-green-600: #e84010;
+  --color-green-700: #c2360d;
+  --color-green-800: #9b2c0a;
+  --color-green-900: #742106;
+  --color-green-950: #4d1604;
 }
 
 @keyframes heroFade {

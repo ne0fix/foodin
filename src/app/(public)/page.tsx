@@ -23,10 +23,10 @@ export default function HomePage() {
           alt="foodin — Delivery de comida"
           fill
           sizes="100vw"
-          className="object-cover opacity-25"
+          className="object-cover opacity-60"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-green-900 via-green-900/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-green-900/50 via-green-900/20 to-transparent" />
         <div className="relative z-10 container mx-auto px-4 max-w-7xl pt-4 pb-16 sm:py-16">
           <div className="max-w-xl">
             <Image

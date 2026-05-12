@@ -4,6 +4,8 @@ const STATUS_MAP: Record<string, { label: string; cor: string }> = {
   APROVADO:              { label: 'Aprovado',               cor: 'bg-blue-100 text-blue-700' },
   EM_SEPARACAO:          { label: 'Em separação',           cor: 'bg-orange-100 text-orange-700' },
   LIBERADO:              { label: 'Liberado para entrega',  cor: 'bg-green-100 text-green-700' },
+  EM_ROTA:               { label: 'Em rota de entrega',     cor: 'bg-blue-100 text-blue-700' },
+  ENTREGUE:              { label: 'Entregue',               cor: 'bg-green-100 text-green-800' },
   CANCELADO:             { label: 'Cancelado',              cor: 'bg-red-100 text-red-700' },
 };
 
