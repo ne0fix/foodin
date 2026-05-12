@@ -5,8 +5,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Explicit webpack config forces webpack bundler and prevents Vercel from auto-enabling Turbopack
-  webpack: (config) => config,
   images: {
     remotePatterns: [
       {
