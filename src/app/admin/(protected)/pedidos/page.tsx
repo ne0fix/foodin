@@ -65,7 +65,7 @@ function formatarTelefone(tel: string): string {
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
-export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; onClose: () => void }) {
+function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; onClose: () => void }) {
   const [pedido, setPedido] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [avancando, setAvancando] = useState(false);
